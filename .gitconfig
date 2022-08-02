@@ -1,6 +1,6 @@
 [user]
-	email = madhankumaravelu93@gmail.com
-	name = Madhan
+  email = madhankumaravelu93@gmail.com
+  name = Madhan
 [core]
   autocrlf = input
   editor = vim
@@ -14,7 +14,7 @@
 [rebase]
   autosquash = true
 [init]
-	defaultBranch = main
+  defaultBranch = main
 [alias]
   b = branch
   co = checkout
