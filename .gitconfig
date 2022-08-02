@@ -1,0 +1,25 @@
+[user]
+	email = madhankumaravelu93@gmail.com
+	name = Madhan
+[core]
+  autocrlf = input
+  editor = vim
+[push]
+  default = current
+[pull]
+  default = current
+  rebase = true
+[merge]
+  stat = true
+[rebase]
+  autosquash = true
+[init]
+	defaultBranch = main
+[alias]
+  b = branch
+  co = checkout
+  d = diff
+  f = fetch
+  rp = git remote prune origin
+  st = status
+  sw = switch
