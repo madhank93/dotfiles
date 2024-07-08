@@ -1,0 +1,106 @@
+- hosts: localhost
+  name: Macbook Setup
+  connection: local
+  tasks:
+    - name: Check if homebrew is installed 
+      ansible.builtin.command: "/usr/bin/which brew"
+      register: brew_installed
+      ignore_errors: true
+
+    - name: Install homebrew if not installed 
+      ansible.builtin.shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      args:
+        creates: /usr/local/bin/brew
+      when: brew_installed.rc != 0
+
+    - name: Ensure Homebrew is in the path
+      ansible.builtin.shell: echo 'export PATH="usr/local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+
+    - name: Ensure applications are installed
+      community.general.homebrew_cask:
+        name: "{{ item }}"
+        state: present
+        install_options: 'appdir=/Applications'
+      with_items:
+        - visual-studio-code
+        - docker
+        - alacritty
+        - brave-browser
+        - spotify
+        - zoom
+        - obs
+        - font-fira-code-nerd-font
+        - telegram
+        - whatsapp
+
+    - name: Ensure software packages are installed
+      community.general.homebrew:
+        name: "{{ item }}"
+        path: "/Applications"
+        state: present
+      with_items:
+        - jq
+        - tree
+        - zsh
+        - yq
+        - wget
+        - go
+        - kubectl
+        - fzf
+        - helm
+        - kind
+        - awscli
+        - helm
+        - pulumi
+        - starship
+        - bash-completion
+        - zsh-syntax-highlighting
+        - ripgrep
+        - zellij
+        - zsh-syntax-highlighting
+        - zsh-autosuggestions
+        - bat
+        - zoxide
+        - eza
+        - mcfly
+        - tldr
+
+    - name: Clone ZSH auto suggestions repo
+      become: true
+      ansible.builtin.git:
+        repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
+        dest: "{{ lookup('env', 'HOME') }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+        update: true
+
+    - name: Clone ZSH syntax highlighting repo
+      become: true
+      ansible.builtin.git:
+        repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
+        dest: "{{ lookup('env', 'HOME') }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+        update: true
+
+    - name: Install nvm
+      ansible.builtin.shell: >
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+      args:
+        creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+
+    - name: Get the path to ZSH
+      become: false
+      local_action: command which zsh
+      register: zsh_path
+
+    - name: "Ensure homebrew zsh is in allowed shells"
+      ansible.builtin.lineinfile:
+        path: /etc/shells
+        line: "{{ zsh_path.stdout }}"
+      become: true
+
+    - name: Install Oh My ZSH
+      ansible.builtin.shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+      args:
+        creates: "/Users/{{ lookup('env', 'USER') }}/.oh-my-zsh"
+
+    - name: Set ZSH as the default shell
+      ansible.builtin.shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
+      become: true

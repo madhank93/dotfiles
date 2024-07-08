@@ -1,0 +1,20 @@
+import = [
+"~/.config/alacritty/catppuccin-mocha.toml",
+"~/.config/alacritty/keybindings.toml",
+]
+
+# working_directory = "cd Volumes/work"
+
+[window]
+dimensions = { columns = 133, lines = 40 }
+position = { x = 100, y = 50 }
+opacity = 0.9
+padding = { x = 10, y = 10 }
+decorations = "Full"
+
+[font]
+normal = { family = "FiraCode Nerd Font" , style = "Regular"}
+size = 14
+
+[selection]
+save_to_clipboard = true
