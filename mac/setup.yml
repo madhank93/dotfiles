@@ -22,8 +22,7 @@
         state: present
         install_options: 'appdir=/Applications'
       with_items:
-        - visual-studio-code
-        - docker
+        - vscodium
         - alacritty
         - brave-browser
         - spotify
@@ -32,6 +31,9 @@
         - font-fira-code-nerd-font
         - telegram
         - whatsapp
+        - vlc
+        - bitwarden
+        - orbstack
 
     - name: Ensure software packages are installed
       community.general.homebrew:
@@ -64,6 +66,8 @@
         - eza
         - mcfly
         - tldr
+        - docker
+        - colima
 
     - name: Clone ZSH auto suggestions repo
       become: true
