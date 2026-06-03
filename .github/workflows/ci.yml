@@ -86,12 +86,32 @@ jobs:
       - name: Install stow
         run: brew install stow
 
-      - name: Stow — dry-run (fresh system, zero conflicts expected)
+      - name: Stow — dry-run (mirrors install.sh backup logic)
         run: |
+          # CI runner pre-creates ~/.gitconfig (and possibly others).
+          # Replicate install.sh: remove known conflicts, then simulate.
+          CONFLICTS=(
+            "$HOME/.zshrc"
+            "$HOME/.gitconfig"
+            "$HOME/.config/starship.toml"
+            "$HOME/zsh/aliases.zsh"
+            "$HOME/.config/alacritty/alacritty.toml"
+            "$HOME/.config/alacritty/catppuccin-mocha.toml"
+            "$HOME/.config/alacritty/key-bindings.toml"
+            "$HOME/.config/zellij/config.kdl"
+          )
+          for f in "${CONFLICTS[@]}"; do
+            if [[ -f "$f" && ! -L "$f" ]]; then
+              echo "  removing pre-existing: $f"
+              rm -f "$f"
+            fi
+          done
           stow --target="$HOME" --simulate --restow \
             --dir="$(pwd)" . 2>&1 | tee /tmp/stow.txt
           if grep -qE "conflicts|cannot stow|ERROR" /tmp/stow.txt; then
-            echo "✗ stow conflicts:" && cat /tmp/stow.txt && exit 1
+            echo "✗ unexpected stow conflicts after cleanup:"
+            cat /tmp/stow.txt
+            exit 1
           fi
           echo "✓ stow dry-run clean"
 
