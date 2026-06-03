@@ -1,0 +1,132 @@
+# Brewfile — pinned package list for macOS setup
+# Run: brew bundle install --file=mac/Brewfile
+# Lock: brew bundle install --file=mac/Brewfile (generates Brewfile.lock.json)
+# Check drift: brew bundle check --file=mac/Brewfile
+
+# ── Third-party taps ──────────────────────────────────────────────────────────
+tap "nikitabobko/tap"              # required for aerospace window manager
+
+# ── GUI Apps ──────────────────────────────────────────────────────────────────
+
+cask "alacritty"                   # terminal emulator
+cask "brave-browser"               # browser
+cask "raycast"                     # spotlight replacement — cmd+space launcher
+cask "karabiner-elements"          # keyboard remapping (capslock → hyper)
+cask "aerospace"                   # tiling window manager
+cask "bitwarden"                   # password manager
+cask "orbstack"                    # docker runtime (OrbStack already active — docker-desktop safe to remove)
+cask "visual-studio-code"          # editor
+cask "claude"                      # Claude desktop app
+cask "obs"                         # screen recording / streaming
+cask "shottr"                      # screenshot tool
+cask "spotify"                     # music
+cask "telegram"                    # messaging
+cask "vlc"                         # media player
+cask "whatsapp"                    # messaging
+cask "font-fira-code-nerd-font"    # coding font with icons
+cask "font-jetbrains-mono-nerd-font" # alternative coding font
+
+# ── Shell ─────────────────────────────────────────────────────────────────────
+
+brew "zsh"                          # 5.9
+brew "starship"                    # 1.25.1 — cross-shell prompt
+brew "zinit"                       # 3.14.0 — plugin manager (replaces oh-my-zsh)
+brew "zsh-autosuggestions"         # 0.7.1  — fallback if zinit GitHub clone fails
+brew "zsh-syntax-highlighting"     # 0.8.0  — fallback if zinit GitHub clone fails
+brew "atuin"                       # 18.16.1 — encrypted shell history (replaces mcfly)
+brew "stow"                        # 2.4.1  — dotfile symlink manager
+
+# ── Editor ────────────────────────────────────────────────────────────────────
+
+brew "neovim"                      # 0.12.2 — editor
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+
+brew "gh"                          # 2.93.0  — GitHub CLI
+brew "git-delta"                   # 0.19.2  — diff viewer with syntax highlighting
+brew "lazygit"                     # 0.62.1  — git TUI
+
+# ── Search / Navigation ───────────────────────────────────────────────────────
+
+brew "fzf"                         # 0.73.1  — fuzzy finder
+brew "fd"                          # 10.4.2  — better find, gitignore-aware
+brew "ripgrep"                     # 15.1.0  — better grep
+brew "zoxide"                      # 0.9.9   — smarter cd with frecency
+brew "navi"                        # 2.24.0  — interactive cheatsheet browser
+
+# ── File / Disk ───────────────────────────────────────────────────────────────
+
+brew "bat"                         # 0.26.1  — better cat with syntax highlighting
+brew "eza"                         # 0.23.4  — better ls with icons and git status
+brew "dust"                        # 1.2.4   — visual disk usage (better du)
+brew "duf"                         # 0.9.1   — disk usage overview (better df)
+brew "tree"                        # 2.3.2   — directory tree viewer
+
+# ── Process / System ──────────────────────────────────────────────────────────
+
+brew "bottom"                      # 0.12.3  — system monitor TUI (better htop)
+brew "procs"                       # 0.14.11 — better ps with search and color
+
+# ── Network ───────────────────────────────────────────────────────────────────
+
+brew "wget"                        # 1.25.0  — file downloader
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+
+brew "jq"                          # 1.8.1   — JSON processor
+brew "yq"                          # 4.53.2  — YAML/JSON/TOML processor
+
+# ── Runtime Manager ───────────────────────────────────────────────────────────
+
+brew "mise"                        # 2026.5.15 — universal version manager
+                                   # manages: node, python, go (see .config/mise/config.toml)
+                                   # replaces: nvm, pyenv, goenv
+
+# brew keeps these installed as deps for: cdk8s, typescript, awscli, nmap, yt-dlp
+# DO NOT uninstall — mise shims shadow them on PATH automatically
+brew "node"                        # brew dep only — PATH controlled by mise
+brew "python@3.13"                 # brew dep only — PATH controlled by mise
+brew "go"                          # brew dep only — PATH controlled by mise
+
+# ── Terminal Multiplexer ──────────────────────────────────────────────────────
+
+brew "zellij"                      # terminal workspace / multiplexer (config in .config/zellij/)
+
+# ── Dev Environment ───────────────────────────────────────────────────────────
+
+brew "direnv"                      # 2.37.1  — per-directory env vars via .envrc
+brew "just"                        # command runner (simpler make alternative)
+
+# ── Security ──────────────────────────────────────────────────────────────────
+
+brew "age"                         # simple file encryption
+brew "sops"                        # secrets file encryption (works with age/pgp/kms)
+brew "cfssl"                       # CloudFlare PKI/TLS toolkit
+
+# ── Cloud / Infrastructure ────────────────────────────────────────────────────
+
+brew "awscli"                      # 2.34.56  — AWS CLI
+brew "pulumi"                      # 3.244.0  — infrastructure as code
+brew "kubernetes-cli"              # 1.36.1   — kubectl
+brew "kubectx"                     # 0.11.0   — kubectx + kubens (context/namespace switcher)
+brew "helm"                        # 4.2.0    — kubernetes package manager
+brew "kind"                        # 0.31.0   — local kubernetes clusters via docker
+brew "k9s"                         # 0.50.18  — kubernetes TUI
+brew "stern"                       # 1.34.0   — multi-pod log tailing
+brew "bash-completion"             # 1.3      — bash completion support
+brew "tldr"                        # simplified man pages
+brew "talosctl"                    # Talos Linux Kubernetes CLI
+brew "nmap"                        # network scanner
+
+# ── Content / Publishing ──────────────────────────────────────────────────────
+
+brew "hugo"                        # static site generator
+brew "zola"                        # static site generator (Rust-based)
+brew "typst"                       # markup typesetting / document generation
+brew "yt-dlp"                      # YouTube / video downloader
+
+# ── Dev Tools ─────────────────────────────────────────────────────────────────
+
+brew "cdk8s"                       # CDK8s CLI — define k8s apps with code
+brew "typescript"                  # TypeScript compiler (tsc)
+brew "arping"                      # ARP-level ping (network diagnostics)

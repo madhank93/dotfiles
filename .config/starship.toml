@@ -1,2 +1,92 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$golang\
+$java\
+$rust\
+$kubernetes\
+$aws\
+$cmd_duration\
+$line_break\
+$character\
+"""
+
+add_newline = true
+
+[directory]
+truncation_length = 4
+truncate_to_repo = true
+format = '[$path]($style)[$read_only]($read_only_style) '
+style = 'bold #89b4fa'
+read_only = ' '
+
+[git_branch]
+format = 'on [$symbol$branch]($style) '
+symbol = ' '
+style = 'bold #cba6f7'
+
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = 'bold #f38ba8'
+conflicted = '⚡'
+ahead = '⇡${count}'
+behind = '⇣${count}'
+diverged = '⇕⇡${ahead_count}⇣${behind_count}'
+untracked = '?${count}'
+stashed = 'S${count}'
+modified = '!${count}'
+staged = '+${count}'
+renamed = '»${count}'
+deleted = '✘${count}'
+
+[nodejs]
+format = 'via [ $version]($style) '
+style = 'bold #a6e3a1'
+detect_files = ['package.json', '.nvmrc', '.node-version']
+detect_folders = ['node_modules']
+
+[python]
+format = 'via [🐍 $version]($style) '
+style = 'bold #f9e2af'
+detect_files = ['requirements.txt', 'pyproject.toml', '.python-version', 'Pipfile']
+
+[golang]
+format = 'via [ $version]($style) '
+style = 'bold #89dceb'
+
+[java]
+format = 'via [ $version]($style) '
+style = 'bold #f38ba8'
+
+[rust]
+format = 'via [ $version]($style) '
+style = 'bold #fab387'
+
+[kubernetes]
+disabled = false
+format = 'on [ $context\($namespace\)]($style) '
+style = 'bold #89b4fa'
+detect_files = ['k8s', 'kubernetes', 'helm', 'Chart.yaml']
+detect_folders = ['k8s', 'kubernetes']
+
+[aws]
+format = 'on [ $profile\($region\)]($style) '
+style = 'bold #f9e2af'
+symbol = '☁️  '
+
 [gcloud]
 disabled = true
+
+[cmd_duration]
+min_time = 2000
+format = 'took [$duration]($style) '
+style = 'bold #a6e3a1'
+
+[character]
+success_symbol = '[❯](bold #a6e3a1)'
+error_symbol = '[❯](bold #f38ba8)'

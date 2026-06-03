@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Automated macOS developer environment — Homebrew, GNU Stow, zinit, mise, starship">
+  <title>dotfiles — macOS Dev Environment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Catppuccin Mocha ───────────────────────────────────────── */
+    :root {
+      --base:     #1e1e2e;
+      --mantle:   #181825;
+      --crust:    #11111b;
+      --surface0: #313244;
+      --surface1: #45475a;
+      --surface2: #585b70;
+      --overlay:  #6c7086;
+      --text:     #cdd6f4;
+      --subtext1: #bac2de;
+      --subtext0: #a6adc8;
+      --blue:     #89b4fa;
+      --mauve:    #cba6f7;
+      --pink:     #f38ba8;
+      --green:    #a6e3a1;
+      --yellow:   #f9e2af;
+      --teal:     #94e2d5;
+      --peach:    #fab387;
+      --sky:      #89dceb;
+      --sapphire: #74c7ec;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--base);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Typography ─────────────────────────────────────────────── */
+    h1, h2, h3 { line-height: 1.2; font-weight: 700; }
+    code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ── Nav ────────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(30,30,46,0.7);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--surface0);
+    }
+    .nav-brand { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.1rem; color: var(--blue); }
+    .nav-brand span { color: var(--mauve); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--subtext1); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-gh {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.4rem 1rem; border-radius: 6px;
+      background: var(--surface0); color: var(--text);
+      text-decoration: none; font-size: 0.85rem;
+      transition: background .2s;
+    }
+    .nav-gh:hover { background: var(--surface1); }
+
+    /* ── Hero ───────────────────────────────────────────────────── */
+    #hero {
+      position: relative; height: 100vh; min-height: 600px;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    #bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none;
+    }
+    /* Vignette — fades rain at edges, keeps center readable */
+    .hero-overlay {
+      position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 50% at 50% 50%,
+          rgba(30,30,46,0.88) 0%,
+          rgba(30,30,46,0.60) 40%,
+          rgba(30,30,46,0.20) 65%,
+          transparent 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2; max-width: 700px; padding: 2rem;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.3rem 0.9rem; border-radius: 999px;
+      background: var(--surface0); border: 1px solid var(--surface1);
+      font-size: 0.78rem; color: var(--subtext0); margin-bottom: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .hero-badge .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    h1.hero-title {
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800; letter-spacing: -2px; margin-bottom: 1rem;
+      filter: drop-shadow(0 0 32px rgba(30,30,46,0.9));
+    }
+    .grad { background: linear-gradient(135deg, var(--blue), var(--mauve), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero-sub {
+      font-size: 1.15rem; color: var(--text); margin-bottom: 2rem;
+      max-width: 520px; margin-inline: auto;
+      text-shadow: 0 2px 24px rgba(30,30,46,1), 0 0 8px rgba(30,30,46,0.9);
+    }
+    .cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+    .btn {
+      padding: 0.75rem 1.8rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem;
+      text-decoration: none; transition: all .2s; cursor: pointer;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--mauve));
+      color: var(--base); box-shadow: 0 0 30px rgba(137,180,250,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(137,180,250,0.5); }
+    .btn-secondary {
+      background: var(--surface0); color: var(--text);
+      border: 1px solid var(--surface1);
+    }
+    .btn-secondary:hover { background: var(--surface1); transform: translateY(-2px); }
+    .hero-stack { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+    .stack-badge {
+      padding: 0.25rem 0.75rem; border-radius: 6px;
+      font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;
+      background: var(--surface0); border: 1px solid var(--surface1);
+      color: var(--subtext0);
+    }
+    .stack-badge.b { border-color: var(--blue); color: var(--blue); }
+    .stack-badge.m { border-color: var(--mauve); color: var(--mauve); }
+    .stack-badge.g { border-color: var(--green); color: var(--green); }
+    .stack-badge.p { border-color: var(--pink); color: var(--pink); }
+    .stack-badge.y { border-color: var(--yellow); color: var(--yellow); }
+    .stack-badge.t { border-color: var(--teal); color: var(--teal); }
+
+    /* ── Sections ───────────────────────────────────────────────── */
+    section { padding: 6rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+      color: var(--mauve); letter-spacing: 2px; text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+    .section-title { font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 1rem; }
+    .section-sub { color: var(--subtext1); max-width: 560px; margin-bottom: 3rem; }
+
+    /* ── Features ───────────────────────────────────────────────── */
+    #features { background: var(--mantle); }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--surface0); border: 1px solid var(--surface1); border-radius: 12px;
+      padding: 1.8rem; transition: all .3s; position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute; inset: 0; opacity: 0;
+      background: linear-gradient(135deg, rgba(137,180,250,0.05), rgba(203,166,247,0.05));
+      transition: opacity .3s;
+    }
+    .feature-card:hover { border-color: var(--blue); transform: translateY(-4px); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .feature-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text); }
+    .feature-card p { color: var(--subtext0); font-size: 0.9rem; line-height: 1.6; }
+    .feature-tag {
+      display: inline-block; margin-top: 1rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+      font-size: 0.72rem; font-family: 'JetBrains Mono', monospace;
+      background: var(--surface1); color: var(--subtext0);
+    }
+
+    /* ── Quick Start ────────────────────────────────────────────── */
+    #quickstart { background: var(--base); }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .step {
+      background: var(--surface0); border: 1px solid var(--surface1); border-radius: 12px;
+      padding: 2rem; position: relative;
+    }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--blue), var(--mauve));
+      color: var(--base); font-weight: 700; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem;
+    }
+    .step h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+    .step p { color: var(--subtext0); font-size: 0.875rem; margin-bottom: 1rem; }
+    .code-block {
+      background: var(--crust); border: 1px solid var(--surface0); border-radius: 8px;
+      padding: 1rem 1.2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+      color: var(--green); overflow-x: auto; position: relative;
+    }
+    .code-block .comment { color: var(--overlay); }
+    .code-block .cmd { color: var(--blue); }
+
+    /* ── Terminals ──────────────────────────────────────────────── */
+    #terminals { background: var(--mantle); }
+    .terminals-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem;
+    }
+    .terminal {
+      background: var(--crust); border: 1px solid var(--surface0); border-radius: 12px;
+      overflow: hidden; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .terminal-bar {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1rem; background: var(--surface0); border-bottom: 1px solid var(--surface1);
+    }
+    .tdots { display: flex; gap: 6px; }
+    .td { width: 12px; height: 12px; border-radius: 50%; }
+    .td-r { background: var(--pink); }
+    .td-y { background: var(--yellow); }
+    .td-g { background: var(--green); }
+    .ttitle { flex: 1; text-align: center; font-size: 0.75rem; color: var(--subtext0); }
+    .terminal-body { padding: 1.2rem; min-height: 240px; }
+    .tl {
+      display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem;
+      opacity: 0; animation: slideIn 0.3s ease forwards;
+    }
+    .tl.paused { animation-play-state: paused; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .tp  { color: var(--mauve); user-select: none; }
+    .tc  { color: var(--text); }
+    .tok { color: var(--green); }
+    .terr{ color: var(--pink); }
+    .tinf{ color: var(--blue); }
+    .tdim{ color: var(--overlay); }
+    .tbold { font-weight: 700; }
+    .cursor {
+      display: inline-block; width: 8px; height: 1em; background: var(--blue);
+      animation: blink 1s step-end infinite; vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .tver { color: var(--yellow); }
+    .tpkg { color: var(--teal); }
+    .progress-bar {
+      display: block; height: 4px; background: var(--surface1); border-radius: 2px;
+      margin: 0.4rem 0; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--blue), var(--mauve));
+      border-radius: 2px; animation: fill 2s ease forwards;
+    }
+    @keyframes fill { from{width:0} to{width:100%} }
+
+    /* ── Tools ──────────────────────────────────────────────────── */
+    #tools { background: var(--base); }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+    .tool-category h3 {
+      font-size: 0.78rem; font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 2px; text-transform: uppercase; color: var(--mauve);
+      margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--surface0);
+    }
+    .tool-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.6rem 0; border-bottom: 1px solid rgba(69,71,90,0.4);
+    }
+    .tool-name { font-size: 0.9rem; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    .tool-desc { font-size: 0.78rem; color: var(--subtext0); margin-top: 0.15rem; }
+    .tool-ver {
+      font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 4px;
+      background: var(--surface0); color: var(--subtext0);
+      font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+    }
+    .tool-ver.blue { background: rgba(137,180,250,0.15); color: var(--blue); }
+    .tool-ver.mauve { background: rgba(203,166,247,0.15); color: var(--mauve); }
+    .tool-ver.green { background: rgba(166,227,161,0.15); color: var(--green); }
+    .tool-ver.teal { background: rgba(148,226,213,0.15); color: var(--teal); }
+
+    /* ── Walkthrough ────────────────────────────────────────────── */
+    #walkthrough { background: var(--mantle); }
+    .walkthrough-steps { display: flex; flex-direction: column; gap: 3rem; }
+    .wstep { display: grid; grid-template-columns: 60px 1fr; gap: 1.5rem; }
+    .wstep-num {
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .wnum {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--surface0); border: 1px solid var(--surface1);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; color: var(--blue);
+      font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+    }
+    .wline { width: 1px; flex: 1; background: var(--surface1); margin-top: 0.5rem; }
+    .wstep:last-child .wline { display: none; }
+    .wstep-content h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text); }
+    .wstep-content p { color: var(--subtext0); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.7; }
+    .wstep-content .code-block { margin-bottom: 1rem; }
+    .warn-box {
+      background: rgba(249,226,175,0.08); border: 1px solid rgba(249,226,175,0.3);
+      border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--yellow);
+      display: flex; gap: 0.5rem; margin-bottom: 1rem;
+    }
+    .info-box {
+      background: rgba(137,180,250,0.08); border: 1px solid rgba(137,180,250,0.25);
+      border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--blue);
+      display: flex; gap: 0.5rem; margin-bottom: 1rem;
+    }
+
+    /* ── Footer ─────────────────────────────────────────────────── */
+    footer {
+      background: var(--crust); border-top: 1px solid var(--surface0);
+      padding: 2.5rem 2rem; text-align: center;
+    }
+    footer p { color: var(--subtext0); font-size: 0.85rem; }
+    footer a { color: var(--blue); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .footer-stack { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
+    .footer-stack a { color: var(--subtext0); text-decoration: none; font-size: 0.8rem; transition: color .2s; }
+    .footer-stack a:hover { color: var(--text); }
+
+    /* ── Scroll animations ──────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem; }
+      .nav-links { display: none; }
+      section { padding: 4rem 1.2rem; }
+      .wstep { grid-template-columns: 1fr; }
+      .wstep-num { flex-direction: row; }
+      .wline { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-brand">~/<span>dotfiles</span></div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#quickstart">Quick Start</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#walkthrough">Walkthrough</a></li>
+  </ul>
+  <a class="nav-gh" href="https://github.com/madhank93/dotfiles" target="_blank">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+    GitHub
+  </a>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<section id="hero">
+  <canvas id="bg"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot-live"></span>
+      macOS · Apple Silicon · 2026
+      &nbsp;·&nbsp;
+      <a href="https://github.com/madhank93/dotfiles/actions" target="_blank" style="color:inherit;text-decoration:none">
+        <img src="https://github.com/madhank93/dotfiles/actions/workflows/ci.yml/badge.svg" alt="CI" style="height:14px;vertical-align:middle;border-radius:3px">
+      </a>
+    </div>
+    <h1 class="hero-title"><span class="grad">dotfiles</span></h1>
+    <p class="hero-sub">Automated macOS dev environment — reproducible from scratch in one command.</p>
+    <div class="cta">
+      <a href="#quickstart" class="btn btn-primary">Quick Start</a>
+      <a href="#walkthrough" class="btn btn-secondary">Read the Docs</a>
+    </div>
+    <div class="hero-stack">
+      <span class="stack-badge b">Homebrew</span>
+      <span class="stack-badge m">GNU Stow</span>
+      <span class="stack-badge g">mise</span>
+      <span class="stack-badge p">zinit</span>
+      <span class="stack-badge y">starship</span>
+      <span class="stack-badge t">Ansible</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ─────────────────────────────────────────────── -->
+<section id="features">
+  <div class="container">
+    <p class="section-label reveal">What's inside</p>
+    <h2 class="section-title reveal">Everything you need, nothing you don't</h2>
+    <p class="section-sub reveal">A curated, pinned set of tools assembled over time — automated with Ansible and wired together with GNU Stow.</p>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">🍺</div>
+        <h3>Homebrew + Brewfile</h3>
+        <p>Every package declared in <code>mac/Brewfile</code> with pinned versions and inline docs. <code>--no-upgrade</code> prevents drift. Critical tools are <code>brew pin</code>'d.</p>
+        <span class="feature-tag">50+ packages</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🗂️</div>
+        <h3>GNU Stow</h3>
+        <p>Dotfiles live in the repo. Stow creates symlinks into <code>$HOME</code>. Conflict-safe: existing files are backed up to <code>*.pre-stow</code> before linking.</p>
+        <span class="feature-tag">Zero copy</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚡</div>
+        <h3>zinit — fast shell</h3>
+        <p>Replaces oh-my-zsh entirely. Loads plugins in parallel, uses OMZ snippets without the framework overhead. 3× faster shell startup.</p>
+        <span class="feature-tag">v3.14.0</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔀</div>
+        <h3>mise — runtime manager</h3>
+        <p>One tool replaces nvm, sdkman, pyenv, goenv. Node, Python, Go pinned in <code>.config/mise/config.toml</code>. Per-project overrides via <code>.mise.toml</code>.</p>
+        <span class="feature-tag">v2026.5.x</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🚀</div>
+        <h3>starship prompt</h3>
+        <p>Cross-shell prompt showing git branch/status, active k8s context, runtime versions (node/python/go/rust), AWS profile, and command duration.</p>
+        <span class="feature-tag">v1.25.1</span>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📦</div>
+        <h3>Ansible playbook</h3>
+        <p>One playbook wires everything: installs packages, configures ZSH, pins runtimes. Idempotent — safe to re-run. Works on fresh Mac and existing setups.</p>
+        <span class="feature-tag">Idempotent</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Quick Start ───────────────────────────────────────────── -->
+<section id="quickstart">
+  <div class="container">
+    <p class="section-label reveal">Setup</p>
+    <h2 class="section-title reveal">Up and running in minutes</h2>
+    <p class="section-sub reveal">Three steps from zero to a fully configured dev environment.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h3>Prerequisites</h3>
+        <p>Xcode Command Line Tools must be installed first. The install script checks for this and exits cleanly if missing.</p>
+        <div class="code-block"><span class="cmd">xcode-select</span> --install</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <h3>Clone &amp; run</h3>
+        <p>Clone the repo anywhere, then run the bootstrap script. It installs Homebrew, Ansible, all packages, and stows your dotfiles.</p>
+        <div class="code-block">
+          <span class="comment"># clone</span><br>
+          git clone https://github.com/madhank93/dotfiles ~/dotfiles<br><br>
+          <span class="comment"># bootstrap</span><br>
+          <span class="cmd">cd</span> ~/dotfiles &amp;&amp; ./install.sh
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <h3>Install runtimes</h3>
+        <p>After reopening your shell, install the pinned Node, Python, and Go versions via mise.</p>
+        <div class="code-block"><span class="cmd">mise</span> install</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Terminals ─────────────────────────────────────────────── -->
+<section id="terminals">
+  <div class="container">
+    <p class="section-label reveal">In action</p>
+    <h2 class="section-title reveal">See it run</h2>
+    <p class="section-sub reveal">Three key moments — install, first shell, runtime setup.</p>
+    <div class="terminals-grid">
+
+      <!-- Terminal 1: install.sh -->
+      <div class="terminal reveal">
+        <div class="terminal-bar">
+          <div class="tdots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="ttitle">install.sh</span>
+        </div>
+        <div class="terminal-body" id="t1">
+          <div class="tl" style="animation-delay:.1s"><span class="tp">❯</span><span class="tc">./install.sh</span></div>
+          <div class="tl" style="animation-delay:.8s"><span class="tok">✓</span><span class="tc">Xcode CLT found</span></div>
+          <div class="tl" style="animation-delay:1.3s"><span class="tok">✓</span><span class="tc">Homebrew <span class="tver">4.x</span> ready</span></div>
+          <div class="tl" style="animation-delay:1.8s"><span class="tinf">→</span><span class="tc">brew install ansible</span></div>
+          <div class="tl" style="animation-delay:2.6s"><span class="tinf">→</span><span class="tc">Running Ansible playbook...</span></div>
+          <div class="tl" style="animation-delay:3.2s"><span class="tdim">  TASK: Install packages from Brewfile</span></div>
+          <div class="tl" style="animation-delay:3.6s">
+            <span class="tc" style="width:100%">
+              <span class="progress-bar"><span class="progress-fill" style="animation-delay:3.6s"></span></span>
+            </span>
+          </div>
+          <div class="tl" style="animation-delay:5.8s"><span class="tok">✓</span><span class="tc"><span class="tver">50</span> packages installed</span></div>
+          <div class="tl" style="animation-delay:6.4s"><span class="tok">✓</span><span class="tc">Dotfiles stowed to ~</span></div>
+          <div class="tl" style="animation-delay:7s"><span class="tdim">Done. Open a new shell, then run: <span class="tok">mise install</span></span></div>
+          <div class="tl" style="animation-delay:7.5s"><span class="tp">❯</span><span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <!-- Terminal 2: new shell / zinit -->
+      <div class="terminal reveal">
+        <div class="terminal-bar">
+          <div class="tdots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="ttitle">~ — zsh (new session)</span>
+        </div>
+        <div class="terminal-body" id="t2">
+          <div class="tl" style="animation-delay:.3s"><span class="tinf">zinit</span><span class="tc">loading plugins...</span></div>
+          <div class="tl" style="animation-delay:.9s"><span class="tdim">  ●</span><span class="tpkg">zsh-users/zsh-autosuggestions</span></div>
+          <div class="tl" style="animation-delay:1.4s"><span class="tdim">  ●</span><span class="tpkg">zsh-users/zsh-syntax-highlighting</span></div>
+          <div class="tl" style="animation-delay:1.9s"><span class="tdim">  ●</span><span class="tpkg">Aloxaf/fzf-tab</span></div>
+          <div class="tl" style="animation-delay:2.5s"><span class="tok">✓</span><span class="tc">starship prompt active</span></div>
+          <div class="tl" style="animation-delay:3.0s"><span class="tok">✓</span><span class="tc">atuin history ready</span></div>
+          <div class="tl" style="animation-delay:3.5s"><span class="tok">✓</span><span class="tc">zoxide loaded</span></div>
+          <div class="tl" style="animation-delay:4.0s"><span class="tok">✓</span><span class="tc">mise <span class="tver">node 22.4.0</span> active</span></div>
+          <div class="tl" style="animation-delay:4.7s"><span class="tp">~/dotfiles</span></div>
+          <div class="tl" style="animation-delay:4.8s"><span class="tp"> on</span><span class="tinf"> main</span><span class="tok"> ✓</span></div>
+          <div class="tl" style="animation-delay:5.0s"><span class="tp">❯</span><span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <!-- Terminal 3: mise install -->
+      <div class="terminal reveal">
+        <div class="terminal-bar">
+          <div class="tdots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="ttitle">~ — mise install</span>
+        </div>
+        <div class="terminal-body" id="t3">
+          <div class="tl" style="animation-delay:.2s"><span class="tp">❯</span><span class="tc">mise install</span></div>
+          <div class="tl" style="animation-delay:.9s"><span class="tinf">⇓</span><span class="tc">node <span class="tver">22.4.0</span></span></div>
+          <div class="tl" style="animation-delay:2.2s"><span class="tinf">⇓</span><span class="tc">python <span class="tver">3.13.7</span></span></div>
+          <div class="tl" style="animation-delay:3.8s"><span class="tinf">⇓</span><span class="tc">go <span class="tver">1.25.1</span></span></div>
+          <div class="tl" style="animation-delay:5.0s"><span class="tok">✓</span><span class="tc">All runtimes installed</span></div>
+          <div class="tl" style="animation-delay:5.6s"><span class="tp">❯</span><span class="tc">node -v</span></div>
+          <div class="tl" style="animation-delay:6.0s"><span class="tver">v22.4.0</span></div>
+          <div class="tl" style="animation-delay:6.4s"><span class="tp">❯</span><span class="tc">python3 --version</span></div>
+          <div class="tl" style="animation-delay:6.8s"><span class="tver">Python 3.13.7</span></div>
+          <div class="tl" style="animation-delay:7.2s"><span class="tp">❯</span><span class="tc">go version</span></div>
+          <div class="tl" style="animation-delay:7.6s"><span class="tver">go1.25.1 darwin/arm64</span></div>
+          <div class="tl" style="animation-delay:8.0s"><span class="tp">❯</span><span class="cursor"></span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Tools ─────────────────────────────────────────────────── -->
+<section id="tools">
+  <div class="container">
+    <p class="section-label reveal">Reference</p>
+    <h2 class="section-title reveal">Tools &amp; versions</h2>
+    <p class="section-sub reveal">All packages pinned. Versions in <code>mac/Brewfile</code> and <code>.config/mise/config.toml</code>.</p>
+    <div class="tools-grid">
+
+      <div class="tool-category reveal">
+        <h3>Shell</h3>
+        <div class="tool-row">
+          <div><div class="tool-name">zinit</div><div class="tool-desc">Plugin manager, replaces oh-my-zsh</div></div>
+          <span class="tool-ver mauve">3.14.0</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">starship</div><div class="tool-desc">Cross-shell prompt</div></div>
+          <span class="tool-ver blue">1.25.1</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">atuin</div><div class="tool-desc">Encrypted shell history</div></div>
+          <span class="tool-ver green">18.16.1</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">zoxide</div><div class="tool-desc">Smarter cd with frecency</div></div>
+          <span class="tool-ver teal">0.9.9</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">direnv</div><div class="tool-desc">Per-directory env vars</div></div>
+          <span class="tool-ver blue">2.37.1</span>
+        </div>
+      </div>
+
+      <div class="tool-category reveal">
+        <h3>Git</h3>
+        <div class="tool-row">
+          <div><div class="tool-name">lazygit</div><div class="tool-desc">Full TUI — stage, rebase, log</div></div>
+          <span class="tool-ver green">0.62.1</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">git-delta</div><div class="tool-desc">Syntax-highlighted diffs</div></div>
+          <span class="tool-ver blue">0.19.2</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">gh</div><div class="tool-desc">GitHub CLI</div></div>
+          <span class="tool-ver mauve">2.93.0</span>
+        </div>
+      </div>
+
+      <div class="tool-category reveal">
+        <h3>Search &amp; Navigation</h3>
+        <div class="tool-row">
+          <div><div class="tool-name">fzf</div><div class="tool-desc">Fuzzy finder</div></div>
+          <span class="tool-ver blue">0.73.1</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">fd</div><div class="tool-desc">Better find</div></div>
+          <span class="tool-ver green">10.4.2</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">ripgrep</div><div class="tool-desc">Better grep</div></div>
+          <span class="tool-ver teal">15.1.0</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">navi</div><div class="tool-desc">Interactive cheatsheets</div></div>
+          <span class="tool-ver mauve">2.24.0</span>
+        </div>
+      </div>
+
+      <div class="tool-category reveal">
+        <h3>Kubernetes</h3>
+        <div class="tool-row">
+          <div><div class="tool-name">k9s</div><div class="tool-desc">Kubernetes TUI</div></div>
+          <span class="tool-ver blue">0.50.18</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">kubectx</div><div class="tool-desc">Context &amp; namespace switcher</div></div>
+          <span class="tool-ver green">0.11.0</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">stern</div><div class="tool-desc">Multi-pod log tailing</div></div>
+          <span class="tool-ver teal">1.34.0</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">helm</div><div class="tool-desc">Kubernetes package manager</div></div>
+          <span class="tool-ver mauve">4.2.0</span>
+        </div>
+      </div>
+
+      <div class="tool-category reveal">
+        <h3>System</h3>
+        <div class="tool-row">
+          <div><div class="tool-name">bottom</div><div class="tool-desc">System monitor TUI (btm)</div></div>
+          <span class="tool-ver blue">0.12.3</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">dust</div><div class="tool-desc">Visual disk usage (du)</div></div>
+          <span class="tool-ver green">1.2.4</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">procs</div><div class="tool-desc">Searchable process list (ps)</div></div>
+          <span class="tool-ver teal">0.14.11</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">duf</div><div class="tool-desc">Disk usage overview (df)</div></div>
+          <span class="tool-ver mauve">0.9.1</span>
+        </div>
+      </div>
+
+      <div class="tool-category reveal">
+        <h3>Runtimes (mise)</h3>
+        <div class="tool-row">
+          <div><div class="tool-name">node</div><div class="tool-desc">LTS — replaces nvm</div></div>
+          <span class="tool-ver green">22.4.0</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">python</div><div class="tool-desc">Replaces pyenv / pipenv</div></div>
+          <span class="tool-ver blue">3.13.7</span>
+        </div>
+        <div class="tool-row">
+          <div><div class="tool-name">go</div><div class="tool-desc">Replaces goenv</div></div>
+          <span class="tool-ver teal">1.25.1</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Walkthrough ───────────────────────────────────────────── -->
+<section id="walkthrough">
+  <div class="container">
+    <p class="section-label reveal">Guide</p>
+    <h2 class="section-title reveal">Detailed walkthrough</h2>
+    <p class="section-sub reveal">Everything that happens under the hood, step by step.</p>
+    <div class="walkthrough-steps">
+
+      <div class="wstep reveal">
+        <div class="wstep-num"><div class="wnum">1</div><div class="wline"></div></div>
+        <div class="wstep-content">
+          <h3>Xcode Command Line Tools</h3>
+          <p>Required by Homebrew for compiler toolchain. The install script checks for CLT and exits with instructions if missing.</p>
+          <div class="warn-box">⚠ This triggers a macOS GUI prompt. Must be done before running install.sh.</div>
+          <div class="code-block">xcode-select --install<br><span class="comment"># Verify: xcode-select -p</span></div>
+        </div>
+      </div>
+
+      <div class="wstep reveal">
+        <div class="wstep-num"><div class="wnum">2</div><div class="wline"></div></div>
+        <div class="wstep-content">
+          <h3>Run install.sh</h3>
+          <p>The script auto-detects Apple Silicon vs Intel, installs Homebrew if missing, installs Ansible, runs the Ansible playbook, backs up conflicting dotfiles, then stows symlinks.</p>
+          <div class="code-block">git clone https://github.com/madhank93/dotfiles ~/dotfiles<br>cd ~/dotfiles &amp;&amp; ./install.sh<br><span class="comment"># Prompts once for sudo password (for chsh + /etc/shells)</span></div>
+          <div class="info-box">ℹ Existing dotfiles are backed up to <code>*.pre-stow</code>, not deleted.</div>
+        </div>
+      </div>
+
+      <div class="wstep reveal">
+        <div class="wstep-num"><div class="wnum">3</div><div class="wline"></div></div>
+        <div class="wstep-content">
+          <h3>Ansible provisions packages</h3>
+          <p>The playbook runs <code>brew bundle install --no-upgrade</code> against <code>mac/Brewfile</code>. All 50+ packages install. Critical tools are pinned to prevent accidental <code>brew upgrade</code> breakage.</p>
+          <div class="code-block"><span class="comment"># Pinned: kubernetes-cli, helm, awscli, mise, neovim</span><br>brew bundle check --file=mac/Brewfile<br><br><span class="comment"># To upgrade a pinned package:</span><br>brew unpin kubernetes-cli &amp;&amp; brew upgrade kubernetes-cli &amp;&amp; brew pin kubernetes-cli</div>
+        </div>
+      </div>
+
+      <div class="wstep reveal">
+        <div class="wstep-num"><div class="wnum">4</div><div class="wline"></div></div>
+        <div class="wstep-content">
+          <h3>GNU Stow creates symlinks</h3>
+          <p>Stow maps the dotfiles repo into <code>$HOME</code>. Files listed in <code>.stow-local-ignore</code> are skipped (<code>mac/</code>, <code>linux/</code>, <code>windows/</code>, <code>README.*</code>).</p>
+          <div class="code-block"><span class="comment"># Re-stow after any change to dotfiles:</span><br>stow --target=$HOME --restow .<br><br><span class="comment"># Verify symlinks:</span><br>ls -la ~/.zshrc  <span class="comment"># should show → ~/dotfiles/.zshrc</span></div>
+        </div>
+      </div>
+
+      <div class="wstep reveal">
+        <div class="wstep-num"><div class="wnum">5</div><div class="wline"></div></div>
+        <div class="wstep-content">
+          <h3>First shell — zinit loads plugins</h3>
+          <p>On the first shell open, zinit clones three plugins from GitHub (requires internet, one-time, ~5s). Subsequent starts load from cache.</p>
+          <div class="code-block"><span class="comment"># Plugins loaded:</span><br>zinit light zsh-users/zsh-autosuggestions<br>zinit light zsh-users/zsh-syntax-highlighting<br>zinit light Aloxaf/fzf-tab<br><br><span class="comment"># OMZ snippets (no full framework):</span><br>zinit snippet OMZP::git   <span class="comment"># ga, gst, gco, gp…</span><br>zinit snippet OMZP::sudo  <span class="comment"># ESC+ESC → prepend sudo</span></div>
+        </div>
+      </div>
+
+      <div class="wstep reveal">
+        <div class="wstep-num"><div class="wnum">6</div><div class="wline"></div></div>
+        <div class="wstep-content">
+          <h3>Install runtimes with mise</h3>
+          <p>mise manages Node, Python, and Go. Versions are pinned in <code>.config/mise/config.toml</code>. Brew keeps the same runtimes installed as dependencies for other tools — mise shims shadow them on PATH automatically.</p>
+          <div class="code-block">mise install          <span class="comment"># installs node, python, go, npm:ts-node</span><br>mise ls               <span class="comment"># verify all runtimes</span></div>
+          <div class="info-box">ℹ Do NOT <code>brew uninstall node python@3.13 go</code> — they are deps for awscli, cdk8s, yt-dlp. mise shims override them on PATH.</div>
+          <p style="margin-top:1rem">Global npm packages declared in <code>.config/mise/config.toml</code> are installed automatically by <code>mise install</code> and reinstalled on node version upgrades — no manual <code>npm install -g</code> needed.</p>
+          <div class="code-block"><span class="comment"># Add more npm globals (persisted in mise config):</span><br>mise use --global npm:some-tool<br><br><span class="comment"># cdk8s + typescript already in Brewfile — no npm install needed:</span><br>cdk8s --version   <span class="comment"># from brew</span><br>tsc --version     <span class="comment"># from brew</span><br><br><span class="comment"># Go tools (manual, per-machine):</span><br>go install golang.org/x/tools/gopls@latest<br>go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ────────────────────────────────────────────────── -->
+<footer>
+  <p>Built by <a href="https://github.com/madhank93">Madhan</a> · Catppuccin Mocha · MIT License</p>
+  <div class="footer-stack">
+    <a href="https://brew.sh">Homebrew</a>
+    <a href="https://www.gnu.org/software/stow/">GNU Stow</a>
+    <a href="https://github.com/zdharma-continuum/zinit">zinit</a>
+    <a href="https://mise.jdx.dev">mise</a>
+    <a href="https://starship.rs">starship</a>
+    <a href="https://github.com/madhank93/dotfiles">Source</a>
+  </div>
+</footer>
+
+<!-- ── Command Rain ───────────────────────────────────────────── -->
+<script>
+(function () {
+  const canvas = document.getElementById('bg');
+  const ctx    = canvas.getContext('2d');
+  const FS     = 15; // font size + column width
+
+  // Real tools from the stack — characters are sampled from these words
+  const WORDS = [
+    'kubectl','helm','mise','brew','docker','ansible','stow',
+    'lazygit','gh','k9s','pulumi','git','zsh','zinit','starship',
+    'zoxide','atuin','direnv','fd','ripgrep','kind','stern',
+    'kubectx','delta','bat','eza','fzf','navi','just','sops',
+    'age','yq','jq','node','python','golang','terraform','argocd',
+    'grafana','neovim','orbstack','aerospace','raycast'
+  ];
+
+  // Catppuccin Mocha palette — assigned per column
+  const PALETTE = [
+    '#89b4fa', // blue   — k8s tools
+    '#a6e3a1', // green  — package mgmt
+    '#cba6f7', // mauve  — git
+    '#94e2d5', // teal   — cloud/infra
+    '#fab387', // peach  — shell
+    '#89dceb', // sky    — search
+    '#f9e2af', // yellow — runtimes
+  ];
+
+  let cols, drops, spd, clr;
+
+  function init() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    cols  = Math.floor(canvas.width / FS);
+    drops = Array.from({ length: cols }, () => -Math.random() * 80);
+    spd   = Array.from({ length: cols }, () => 0.2 + Math.random() * 0.5);
+    clr   = Array.from({ length: cols }, (_, i) => PALETTE[i % PALETTE.length]);
+  }
+
+  // Pick a char: 45% from real command names, 55% alphanumeric/symbols
+  const SYMS = 'abcdefghijklmnopqrstuvwxyz0123456789$-_./:|@#';
+  function ch() {
+    if (Math.random() < 0.45) {
+      const w = WORDS[Math.floor(Math.random() * WORDS.length)];
+      return w[Math.floor(Math.random() * w.length)];
+    }
+    return SYMS[Math.floor(Math.random() * SYMS.length)];
+  }
+
+  function frame() {
+    // Semi-transparent fill creates the fading trail effect
+    ctx.fillStyle = 'rgba(30,30,46,0.07)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font      = `${FS}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'left';
+
+    for (let i = 0; i < cols; i++) {
+      const y = drops[i] * FS;
+      if (y < -FS) { drops[i] += spd[i]; continue; }
+
+      const x = i * FS;
+
+      // Head character — white with strong glow
+      ctx.shadowColor = clr[i];
+      ctx.shadowBlur  = 18;
+      ctx.fillStyle   = '#ffffff';
+      ctx.fillText(ch(), x, y);
+
+      // Character just behind head — colored, softer glow
+      if (y > FS) {
+        ctx.shadowBlur = 8;
+        ctx.fillStyle  = clr[i];
+        ctx.fillText(ch(), x, y - FS);
+      }
+
+      ctx.shadowBlur = 0;
+      drops[i] += spd[i];
+
+      // Reset column when it exits the bottom
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = -Math.random() * 40;
+        spd[i]   = 0.2 + Math.random() * 0.5;
+        clr[i]   = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  init();
+  window.addEventListener('resize', init);
+  requestAnimationFrame(frame);
+})();
+</script>
+
+<!-- ── Scroll reveal ─────────────────────────────────────────── -->
+<script>
+(function () {
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.12 });
+  els.forEach(el => obs.observe(el));
+})();
+</script>
+
+</body>
+</html>

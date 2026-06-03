@@ -1,0 +1,18 @@
+# Global runtime versions managed by mise
+# Docs: https://mise.jdx.dev
+# Install all: mise install
+# Upgrade a tool: mise use --global node@<version>
+# Per-project override: mise use node@<version>  (creates .mise.toml in cwd)
+
+[tools]
+node          = "22.4.0"    # replaces nvm — upgrade: mise use --global node@22.x
+python        = "3.13.7"    # matches current brew python
+go            = "1.25.1"    # matches current brew go
+"npm:ts-node" = "10.9.2"   # global npm tool managed by mise alongside node
+
+# NOTE: brew keeps node/python@3.13/go installed as deps for cdk8s, typescript,
+# awscli, nmap, yt-dlp. mise shims shadow them on PATH — do NOT brew uninstall them.
+#
+# Adding npm packages here (npm:pkg = "version") installs them alongside the
+# pinned node version. They survive node version switches (mise reinstalls them).
+# Use `mise use --global npm:<package>` to add more.
