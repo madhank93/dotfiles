@@ -32,12 +32,16 @@ jobs:
           ruby -c mac/Brewfile
           echo "✓ Brewfile syntax OK"
 
-      - name: Brewfile — no deprecated taps
+      - name: Brewfile — required taps present, no homebrew/* taps
         run: |
-          if grep -q "^tap" mac/Brewfile; then
-            echo "✗ deprecated tap found:" && grep "^tap" mac/Brewfile && exit 1
+          # homebrew/bundle, homebrew/cask, homebrew/core are built-in — should not be declared
+          if grep -qE '^tap "homebrew/' mac/Brewfile; then
+            echo "✗ unnecessary homebrew/* tap:" && grep 'homebrew/' mac/Brewfile && exit 1
           fi
-          echo "✓ no deprecated taps"
+          # aerospace requires nikitabobko/tap
+          grep -q 'nikitabobko/tap' mac/Brewfile \
+            || { echo "✗ missing tap nikitabobko/tap (required for aerospace)"; exit 1; }
+          echo "✓ taps OK"
 
       # ── Config files ─────────────────────────────────────────────
       - name: mise config — TOML syntax
@@ -134,7 +138,7 @@ jobs:
           [ "$BROKEN" -eq 0 ] && echo "✓ all anchor links valid" \
             || { echo "✗ ${BROKEN} broken links"; exit 1; }
 
-      - name: Docs — Three.js / Canvas script present
+      - name: Docs — canvas command rain animation present
         run: |
           grep -q "Command Rain\|getContext\|requestAnimationFrame" docs/index.html \
             || { echo "✗ canvas animation missing"; exit 1; }

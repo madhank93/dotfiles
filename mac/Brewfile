@@ -3,6 +3,9 @@
 # Lock: brew bundle install --file=mac/Brewfile (generates Brewfile.lock.json)
 # Check drift: brew bundle check --file=mac/Brewfile
 
+# ── Third-party taps ──────────────────────────────────────────────────────────
+tap "nikitabobko/tap"              # required for aerospace window manager
+
 # ── GUI Apps ──────────────────────────────────────────────────────────────────
 
 cask "alacritty"                   # terminal emulator
