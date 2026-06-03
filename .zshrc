@@ -61,3 +61,6 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza --tree --level=2 {}'
 # === Completions ===
 autoload -Uz compinit && compinit
 command -v kubectl &>/dev/null && source <(kubectl completion zsh)
+
+# === Zellij — auto-start (skip if already inside zellij or non-interactive) ===
+[[ -z "$ZELLIJ" && $- == *i* ]] && exec zellij

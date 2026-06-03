@@ -28,7 +28,6 @@ alias top='btm'
 alias du='dust'
 alias df='duf'
 alias ps='procs'
-alias port='lsof -i'
 
 # Tools
 alias python='python3'
