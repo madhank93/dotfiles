@@ -16,7 +16,6 @@ cask "aerospace"                   # tiling window manager
 cask "bitwarden"                   # password manager
 cask "orbstack"                    # docker runtime (OrbStack already active — docker-desktop safe to remove)
 cask "visual-studio-code"          # editor
-cask "cursor"                      # AI editor
 cask "claude"                      # Claude desktop app
 cask "obs"                         # screen recording / streaming
 cask "shottr"                      # screenshot tool
@@ -24,7 +23,6 @@ cask "spotify"                     # music
 cask "telegram"                    # messaging
 cask "vlc"                         # media player
 cask "whatsapp"                    # messaging
-cask "zoom"                        # video calls
 cask "font-fira-code-nerd-font"    # coding font with icons
 cask "font-jetbrains-mono-nerd-font" # alternative coding font
 

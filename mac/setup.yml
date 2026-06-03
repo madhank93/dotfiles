@@ -4,35 +4,8 @@
   vars:
     brew_bin: "{{ '/opt/homebrew/bin/brew' if ansible_architecture == 'arm64' else '/usr/local/bin/brew' }}"
   tasks:
-    - name: Check if homebrew is installed
-      ansible.builtin.command: "/usr/bin/which brew"
-      register: brew_installed
-      ignore_errors: true
-
-    - name: Install homebrew if not installed
-      ansible.builtin.shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      args:
-        creates: "{{ brew_bin }}"
-      when: brew_installed.rc != 0
-
-    - name: Install packages from Brewfile
-      ansible.builtin.shell: >
-        "{{ brew_bin }}" bundle install
-        --file="{{ playbook_dir }}/Brewfile"
-        --no-upgrade
-      # Full path used: env PATH from prior shell task does not persist between tasks.
-      # --no-upgrade: installs missing packages only, never auto-upgrades existing ones.
-      # Generates Brewfile.lock.json on first run — commit it to lock exact versions.
-
-    - name: Pin critical packages to prevent accidental brew upgrade
-      ansible.builtin.shell: "{{ brew_bin }} pin {{ item }}"
-      with_items:
-        - kubernetes-cli
-        - helm
-        - awscli
-        - mise
-        - neovim
-      ignore_errors: true
+    # brew bundle + brew pin are run in install.sh (needs live terminal for
+    # cask .pkg installers that require interactive sudo).
 
     - name: Get the path to ZSH
       ansible.builtin.command: which zsh
@@ -49,5 +22,3 @@
       become: true
       ignore_errors: true
       # ignore_errors: zsh is already default on macOS Catalina+
-
-    # Dotfile symlinking handled by install.sh (needs conflict backup first)
