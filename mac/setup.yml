@@ -1,110 +1,53 @@
 - hosts: localhost
   name: Macbook Setup
   connection: local
+  vars:
+    brew_bin: "{{ '/opt/homebrew/bin/brew' if ansible_architecture == 'arm64' else '/usr/local/bin/brew' }}"
   tasks:
-    - name: Check if homebrew is installed 
+    - name: Check if homebrew is installed
       ansible.builtin.command: "/usr/bin/which brew"
       register: brew_installed
       ignore_errors: true
 
-    - name: Install homebrew if not installed 
+    - name: Install homebrew if not installed
       ansible.builtin.shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       args:
-        creates: /usr/local/bin/brew
+        creates: "{{ brew_bin }}"
       when: brew_installed.rc != 0
 
-    - name: Ensure Homebrew is in the path
-      ansible.builtin.shell: echo 'export PATH="usr/local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
-
-    - name: Ensure applications are installed
-      community.general.homebrew_cask:
-        name: "{{ item }}"
-        state: present
-        install_options: 'appdir=/Applications'
-      with_items:
-        - vscodium
-        - alacritty
-        - brave-browser
-        - spotify
-        - zoom
-        - obs
-        - font-fira-code-nerd-font
-        - telegram
-        - whatsapp
-        - vlc
-        - bitwarden
-        - orbstack
-
-    - name: Ensure software packages are installed
-      community.general.homebrew:
-        name: "{{ item }}"
-        path: "/Applications"
-        state: present
-      with_items:
-        - jq
-        - tree
-        - zsh
-        - yq
-        - wget
-        - go
-        - kubectl
-        - fzf
-        - helm
-        - kind
-        - awscli
-        - helm
-        - pulumi
-        - starship
-        - bash-completion
-        - zsh-syntax-highlighting
-        - ripgrep
-        - zellij
-        - zsh-syntax-highlighting
-        - zsh-autosuggestions
-        - bat
-        - zoxide
-        - eza
-        - mcfly
-        - tldr
-        - docker
-        - colima
-
-    - name: Clone ZSH auto suggestions repo
-      become: true
-      ansible.builtin.git:
-        repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
-        dest: "{{ lookup('env', 'HOME') }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-        update: true
-
-    - name: Clone ZSH syntax highlighting repo
-      become: true
-      ansible.builtin.git:
-        repo: "https://github.com/zsh-users/zsh-syntax-highlighting.git"
-        dest: "{{ lookup('env', 'HOME') }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-        update: true
-
-    - name: Install nvm
+    - name: Install packages from Brewfile
       ansible.builtin.shell: >
-        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-      args:
-        creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+        "{{ brew_bin }}" bundle install
+        --file="{{ playbook_dir }}/Brewfile"
+        --no-upgrade
+      # Full path used: env PATH from prior shell task does not persist between tasks.
+      # --no-upgrade: installs missing packages only, never auto-upgrades existing ones.
+      # Generates Brewfile.lock.json on first run — commit it to lock exact versions.
+
+    - name: Pin critical packages to prevent accidental brew upgrade
+      ansible.builtin.shell: "{{ brew_bin }} pin {{ item }}"
+      with_items:
+        - kubernetes-cli
+        - helm
+        - awscli
+        - mise
+        - neovim
+      ignore_errors: true
 
     - name: Get the path to ZSH
-      become: false
-      local_action: command which zsh
+      ansible.builtin.command: which zsh
       register: zsh_path
 
-    - name: "Ensure homebrew zsh is in allowed shells"
+    - name: Ensure homebrew zsh is in allowed shells
       ansible.builtin.lineinfile:
         path: /etc/shells
         line: "{{ zsh_path.stdout }}"
       become: true
 
-    - name: Install Oh My ZSH
-      ansible.builtin.shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-      args:
-        creates: "/Users/{{ lookup('env', 'USER') }}/.oh-my-zsh"
-
     - name: Set ZSH as the default shell
-      ansible.builtin.shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
+      ansible.builtin.shell: "chsh -s {{ zsh_path.stdout }} {{ lookup('env', 'USER') }}"
       become: true
+      ignore_errors: true
+      # ignore_errors: zsh is already default on macOS Catalina+
+
+    # Dotfile symlinking handled by install.sh (needs conflict backup first)

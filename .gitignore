@@ -1,3 +1,6 @@
+# Brewfile lock — commit this after first `brew bundle install` to freeze exact versions
+# mac/Brewfile.lock.json
+
 # General
 .DS_Store
 .AppleDouble

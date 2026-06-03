@@ -3,7 +3,16 @@
   name = Madhan
 [core]
   autocrlf = input
-  editor = vim
+  editor = nvim
+  pager = delta
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true
+  light = false
+  line-numbers = true
+  side-by-side = true
+  syntax-theme = Catppuccin-mocha
 [push]
   default = current
 [pull]
@@ -11,6 +20,7 @@
   rebase = true
 [merge]
   stat = true
+  conflictstyle = diff3
 [rebase]
   autosquash = true
 [init]
@@ -19,7 +29,10 @@
   b = branch
   co = checkout
   d = diff
+  ds = diff --staged
   f = fetch
-  rp = git remote prune origin
   st = status
   sw = switch
+  lo = log --oneline --graph --decorate
+  undo = reset --soft HEAD~1
+  aliases = config --get-regexp alias

@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "enhance/**", "feat/**", "fix/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate dotfiles
+    runs-on: macos-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Shell ────────────────────────────────────────────────────
+      - name: Shell syntax — install.sh + zsh modules
+        run: |
+          zsh -n install.sh
+          for f in zsh/*.zsh; do
+            echo "checking $f..."
+            zsh -n "$f"
+          done
+          echo "✓ shell syntax OK"
+
+      # ── Brewfile ─────────────────────────────────────────────────
+      - name: Brewfile — Ruby syntax
+        run: |
+          ruby -c mac/Brewfile
+          echo "✓ Brewfile syntax OK"
+
+      - name: Brewfile — no deprecated taps
+        run: |
+          if grep -q "^tap" mac/Brewfile; then
+            echo "✗ deprecated tap found:" && grep "^tap" mac/Brewfile && exit 1
+          fi
+          echo "✓ no deprecated taps"
+
+      # ── Config files ─────────────────────────────────────────────
+      - name: mise config — TOML syntax
+        run: |
+          python3 -c "
+          import tomllib
+          with open('.config/mise/config.toml', 'rb') as f:
+              data = tomllib.load(f)
+          tools = list(data.get('tools', {}).keys())
+          print('tools:', tools)
+          assert tools, 'no tools defined'
+          "
+          echo "✓ mise config valid"
+
+      - name: gitconfig — valid INI
+        run: |
+          python3 -c "
+          import configparser
+          c = configparser.ConfigParser()
+          c.read('.gitconfig')
+          assert c.sections(), 'empty gitconfig'
+          print('sections:', c.sections())
+          "
+          echo "✓ .gitconfig valid"
+
+      - name: .stow-local-ignore — covers critical dirs
+        run: |
+          for dir in mac linux windows; do
+            grep -q "^${dir}$" .stow-local-ignore \
+              || { echo "✗ missing '$dir' in .stow-local-ignore"; exit 1; }
+            echo "  ✓ $dir"
+          done
+
+      # ── Ansible ──────────────────────────────────────────────────
+      - name: Install ansible
+        run: brew install ansible
+
+      - name: Ansible — syntax check
+        run: |
+          ansible-playbook mac/setup.yml \
+            -i mac/inventory.ini \
+            --syntax-check
+          echo "✓ Ansible syntax OK"
+
+      # ── Stow ─────────────────────────────────────────────────────
+      - name: Install stow
+        run: brew install stow
+
+      - name: Stow — dry-run (fresh system, zero conflicts expected)
+        run: |
+          stow --target="$HOME" --simulate --restow \
+            --dir="$(pwd)" . 2>&1 | tee /tmp/stow.txt
+          if grep -qE "conflicts|cannot stow|ERROR" /tmp/stow.txt; then
+            echo "✗ stow conflicts:" && cat /tmp/stow.txt && exit 1
+          fi
+          echo "✓ stow dry-run clean"
+
+      # ── Docs ─────────────────────────────────────────────────────
+      - name: Docs — all sections present
+        run: |
+          for id in hero features quickstart terminals tools walkthrough; do
+            grep -q "section id=\"${id}\"" docs/index.html \
+              || { echo "✗ missing section #${id}"; exit 1; }
+            echo "  ✓ #${id}"
+          done
+
+      - name: Docs — no broken anchor links
+        run: |
+          BROKEN=0
+          while IFS= read -r id; do
+            grep -q "id=\"${id}\"" docs/index.html \
+              || { echo "  ✗ broken: #${id}"; BROKEN=$((BROKEN+1)); }
+          done < <(grep -oE 'href="#[^"]*"' docs/index.html | sed 's/href="#//;s/"//')
+          [ "$BROKEN" -eq 0 ] && echo "✓ all anchor links valid" \
+            || { echo "✗ ${BROKEN} broken links"; exit 1; }
+
+      - name: Docs — Three.js / Canvas script present
+        run: |
+          grep -q "Command Rain\|getContext\|requestAnimationFrame" docs/index.html \
+            || { echo "✗ canvas animation missing"; exit 1; }
+          echo "✓ canvas animation present"
