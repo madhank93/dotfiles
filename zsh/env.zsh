@@ -5,6 +5,9 @@
 export GOPATH="$HOME/go"
 export PATH="$GOPATH/bin:$PATH"
 
+# mise shims — makes mise-managed tools visible to GUI apps (VSCode, etc.)
+export PATH="${HOME}/.local/share/mise/shims:${PATH}"
+
 # Local bin
 export PATH="$HOME/.local/bin:$PATH"
 

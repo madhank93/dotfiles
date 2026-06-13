@@ -28,8 +28,8 @@ fi
 eval "$($BREW_BIN shellenv)"
 
 # ── Packages ──────────────────────────────────────────────────────────────────
-# brew bundle runs here (not in Ansible) so cask .pkg installers get a live
-# terminal for sudo. Cache sudo credentials upfront so pkg installers and
+# brew bundle needs a live terminal for cask .pkg installers that require
+# interactive sudo. Cache sudo credentials upfront so pkg installers and
 # cask adopt operations don't stall waiting for a password.
 
 sudo -v
@@ -51,19 +51,22 @@ for pkg in kubernetes-cli helm awscli mise neovim; do
   brew pin "$pkg" 2>/dev/null || true
 done
 
-# ── Shell (Ansible — needs sudo for /etc/shells + chsh) ───────────────────────
+# ── Shell — register homebrew zsh + set as default ────────────────────────────
+# (sudo token already cached above for brew bundle, so no extra prompt)
 
-if ! command -v ansible &>/dev/null; then
-  brew install ansible
+ZSH_PATH="$(command -v zsh)"
+
+if ! grep -qx "$ZSH_PATH" /etc/shells; then
+  echo "$ZSH_PATH" | sudo tee -a /etc/shells >/dev/null
 fi
 
-ansible-playbook "$DOTFILES/mac/setup.yml" \
-  -i "$DOTFILES/mac/inventory.ini" \
-  --ask-become-pass
+# no-op if zsh is already the default shell (Catalina+)
+[[ "$SHELL" == "$ZSH_PATH" ]] || sudo chsh -s "$ZSH_PATH" "$USER" || true
 
 # ── Stow ──────────────────────────────────────────────────────────────────────
 
 CONFLICTS=(
+  "$HOME/.zprofile"
   "$HOME/.zshrc"
   "$HOME/.gitconfig"
   "$HOME/.config/starship.toml"

@@ -75,17 +75,6 @@ jobs:
             echo "  ✓ $dir"
           done
 
-      # ── Ansible ──────────────────────────────────────────────────
-      - name: Install ansible
-        run: brew install ansible
-
-      - name: Ansible — syntax check
-        run: |
-          ansible-playbook mac/setup.yml \
-            -i mac/inventory.ini \
-            --syntax-check
-          echo "✓ Ansible syntax OK"
-
       # ── Stow ─────────────────────────────────────────────────────
       - name: Install stow
         run: brew install stow

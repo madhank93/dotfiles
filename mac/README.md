@@ -16,7 +16,10 @@ Or manually:
 
 ```sh
 brew bundle install --file=mac/Brewfile
-ansible-playbook mac/setup.yml -i mac/inventory.ini
+# register homebrew zsh + set as default shell
+zsh_path="$(command -v zsh)"
+grep -qx "$zsh_path" /etc/shells || echo "$zsh_path" | sudo tee -a /etc/shells
+sudo chsh -s "$zsh_path" "$USER"
 stow --target=$HOME --restow .
 ```
 

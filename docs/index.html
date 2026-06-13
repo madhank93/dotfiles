@@ -377,7 +377,7 @@
       <span class="stack-badge g">mise</span>
       <span class="stack-badge p">zinit</span>
       <span class="stack-badge y">starship</span>
-      <span class="stack-badge t">Ansible</span>
+      <span class="stack-badge t">Brewfile</span>
     </div>
   </div>
 </section>
@@ -387,7 +387,7 @@
   <div class="container">
     <p class="section-label reveal">What's inside</p>
     <h2 class="section-title reveal">Everything you need, nothing you don't</h2>
-    <p class="section-sub reveal">A curated, pinned set of tools assembled over time — automated with Ansible and wired together with GNU Stow.</p>
+    <p class="section-sub reveal">A curated, pinned set of tools assembled over time — bootstrapped with a single shell script and wired together with GNU Stow.</p>
     <div class="features-grid">
       <div class="feature-card reveal">
         <div class="feature-icon">🍺</div>
@@ -421,8 +421,8 @@
       </div>
       <div class="feature-card reveal">
         <div class="feature-icon">📦</div>
-        <h3>Ansible playbook</h3>
-        <p>One playbook wires everything: installs packages, configures ZSH, pins runtimes. Idempotent — safe to re-run. Works on fresh Mac and existing setups.</p>
+        <h3>install.sh bootstrap</h3>
+        <p>One shell script wires everything: installs Homebrew + packages, sets ZSH as default, stows symlinks, installs mise runtimes. Idempotent — safe to re-run on fresh or existing setups.</p>
         <span class="feature-tag">Idempotent</span>
       </div>
     </div>
@@ -445,7 +445,7 @@
       <div class="step reveal">
         <div class="step-num">02</div>
         <h3>Clone &amp; run</h3>
-        <p>Clone the repo anywhere, then run the bootstrap script. It installs Homebrew, Ansible, all packages, and stows your dotfiles.</p>
+        <p>Clone the repo anywhere, then run the bootstrap script. It installs Homebrew, all packages, sets your default shell, and stows your dotfiles.</p>
         <div class="code-block">
           <span class="comment"># clone</span><br>
           git clone https://github.com/madhank93/dotfiles ~/dotfiles<br><br>
@@ -481,9 +481,9 @@
           <div class="tl" style="animation-delay:.1s"><span class="tp">❯</span><span class="tc">./install.sh</span></div>
           <div class="tl" style="animation-delay:.8s"><span class="tok">✓</span><span class="tc">Xcode CLT found</span></div>
           <div class="tl" style="animation-delay:1.3s"><span class="tok">✓</span><span class="tc">Homebrew <span class="tver">4.x</span> ready</span></div>
-          <div class="tl" style="animation-delay:1.8s"><span class="tinf">→</span><span class="tc">brew install ansible</span></div>
-          <div class="tl" style="animation-delay:2.6s"><span class="tinf">→</span><span class="tc">Running Ansible playbook...</span></div>
-          <div class="tl" style="animation-delay:3.2s"><span class="tdim">  TASK: Install packages from Brewfile</span></div>
+          <div class="tl" style="animation-delay:1.8s"><span class="tinf">→</span><span class="tc">sudo -v &amp;&amp; brew bundle install</span></div>
+          <div class="tl" style="animation-delay:2.6s"><span class="tinf">→</span><span class="tc">--file=mac/Brewfile --no-upgrade</span></div>
+          <div class="tl" style="animation-delay:3.2s"><span class="tdim">  Installing packages from Brewfile...</span></div>
           <div class="tl" style="animation-delay:3.6s">
             <span class="tc" style="width:100%">
               <span class="progress-bar"><span class="progress-fill" style="animation-delay:3.6s"></span></span>
@@ -693,7 +693,7 @@
         <div class="wstep-num"><div class="wnum">2</div><div class="wline"></div></div>
         <div class="wstep-content">
           <h3>Run install.sh</h3>
-          <p>The script auto-detects Apple Silicon vs Intel, installs Homebrew if missing, installs Ansible, runs the Ansible playbook, backs up conflicting dotfiles, then stows symlinks.</p>
+          <p>The script auto-detects Apple Silicon vs Intel, installs Homebrew if missing, runs <code>brew bundle</code>, sets ZSH as the default shell, backs up conflicting dotfiles, then stows symlinks.</p>
           <div class="code-block">git clone https://github.com/madhank93/dotfiles ~/dotfiles<br>cd ~/dotfiles &amp;&amp; ./install.sh<br><span class="comment"># Prompts once for sudo password (for chsh + /etc/shells)</span></div>
           <div class="info-box">ℹ Existing dotfiles are backed up to <code>*.pre-stow</code>, not deleted.</div>
         </div>
@@ -702,8 +702,8 @@
       <div class="wstep reveal">
         <div class="wstep-num"><div class="wnum">3</div><div class="wline"></div></div>
         <div class="wstep-content">
-          <h3>Ansible provisions packages</h3>
-          <p>The playbook runs <code>brew bundle install --no-upgrade</code> against <code>mac/Brewfile</code>. All 50+ packages install. Critical tools are pinned to prevent accidental <code>brew upgrade</code> breakage.</p>
+          <h3>Homebrew provisions packages</h3>
+          <p>The script runs <code>brew bundle install --no-upgrade</code> against <code>mac/Brewfile</code>. All 50+ packages install. Critical tools are pinned to prevent accidental <code>brew upgrade</code> breakage.</p>
           <div class="code-block"><span class="comment"># Pinned: kubernetes-cli, helm, awscli, mise, neovim</span><br>brew bundle check --file=mac/Brewfile<br><br><span class="comment"># To upgrade a pinned package:</span><br>brew unpin kubernetes-cli &amp;&amp; brew upgrade kubernetes-cli &amp;&amp; brew pin kubernetes-cli</div>
         </div>
       </div>
@@ -764,7 +764,7 @@
 
   // Real tools from the stack — characters are sampled from these words
   const WORDS = [
-    'kubectl','helm','mise','brew','docker','ansible','stow',
+    'kubectl','helm','mise','brew','docker','kubebuilder','stow',
     'lazygit','gh','k9s','pulumi','git','zsh','zinit','starship',
     'zoxide','atuin','direnv','fd','ripgrep','kind','stern',
     'kubectx','delta','bat','eza','fzf','navi','just','sops',
