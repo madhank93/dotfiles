@@ -23,7 +23,7 @@ fcd() {
 }
 
 # fzf git branch checkout
-gco() {
+fco() {
   local branch
   branch=$(git branch --all | fzf | tr -d '[:space:]')
   [ -n "$branch" ] && git checkout "${branch#remotes/origin/}"
@@ -37,6 +37,16 @@ myip() { curl -s https://api.ipify.org && echo }
 
 # Quick HTTP server in current dir
 serve() { python3 -m http.server "${1:-8000}" }
+
+# Rename zellij tab to current folder name (runs on cd + shell start)
+_zellij_tab_cwd() {
+  [[ -n "$ZELLIJ" ]] && zellij action rename-tab "${PWD##*/}" 2>/dev/null
+}
+if [[ -n "$ZELLIJ" ]]; then
+  autoload -Uz add-zsh-hook
+  add-zsh-hook chpwd _zellij_tab_cwd
+  _zellij_tab_cwd
+fi
 
 # fzf kill process
 fkill() {
