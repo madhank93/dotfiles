@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal dotfiles for macOS. Managed with [GNU Stow](https://www.gnu.org/software/stow/) + [Ansible](https://www.ansible.com/).
+Personal dotfiles for macOS. Managed with [Homebrew](https://brew.sh) + [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## Quick start
 
@@ -10,7 +10,7 @@ cd ~/dotfiles
 ./install.sh
 ```
 
-`install.sh` runs: Homebrew → Ansible playbook → Stow symlinks.
+`install.sh` runs: Homebrew → Brewfile packages → Stow symlinks → mise runtimes.
 
 ## Structure
 
@@ -28,7 +28,6 @@ dotfiles/
 │   ├── env.zsh               # PATH and exports
 │   └── functions.zsh         # shell functions (mkcd, extract, fcd…)
 ├── mac/
-│   ├── setup.yml             # Ansible playbook
 │   ├── Brewfile              # pinned package list with versions
 │   └── README.md             # macOS setup guide
 └── install.sh                # bootstrap script
