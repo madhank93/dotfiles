@@ -96,6 +96,15 @@ else
   echo "mise not found — run manually: mise install"
 fi
 
+# ── uv tools (Python CLIs) ────────────────────────────────────────────────────
+# Pinned to Python 3.12: aider's pydub dep imports the audioop module, removed in 3.13.
+
+if command -v uv &>/dev/null; then
+  uv tool install --python 3.12 aider-chat   # local-LLM pair-programming / code agent
+else
+  echo "uv not found — skipping uv tools (brew install uv)"
+fi
+
 echo ""
 echo "Done. Open a new shell."
 echo "zinit plugins will auto-clone on first shell open (~5s, needs internet)."
