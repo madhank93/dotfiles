@@ -88,6 +88,8 @@ brew "node"                        # brew dep only — PATH controlled by mise
 brew "python@3.13"                 # brew dep only — PATH controlled by mise
 brew "go"                          # brew dep only — PATH controlled by mise
 
+brew "uv"                          # Python package & tool manager — installs Python CLIs (aider, see install.sh)
+
 # ── Terminal Multiplexer ──────────────────────────────────────────────────────
 
 brew "zellij"                      # terminal workspace / multiplexer (config in .config/zellij/)

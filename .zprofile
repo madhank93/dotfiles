@@ -7,5 +7,8 @@
 # mise — activates version-managed tools (Go, Node, Python…) for GUI apps
 eval "$(/opt/homebrew/bin/mise activate zsh)"
 
+# uv tools — Python CLIs installed via `uv tool install` (aider, …)
+export PATH="$HOME/.local/bin:$PATH"
+
 # OrbStack (added by OrbStack installer — keep for container/VM tooling)
 source ~/.orbstack/shell/init.zsh 2>/dev/null || :
