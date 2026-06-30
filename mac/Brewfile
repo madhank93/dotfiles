@@ -118,6 +118,7 @@ brew "stern"                       # 1.34.0   — multi-pod log tailing
 brew "bash-completion"             # 1.3      — bash completion support
 brew "tldr"                        # simplified man pages
 brew "talosctl"                    # Talos Linux Kubernetes CLI
+brew "labctl"                      # iximiuz Labs CLI — author/publish playground content
 brew "nmap"                        # network scanner
 
 # ── Content / Publishing ──────────────────────────────────────────────────────
