@@ -36,3 +36,9 @@
   lo = log --oneline --graph --decorate
   undo = reset --soft HEAD~1
   aliases = config --get-regexp alias
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

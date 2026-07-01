@@ -8,27 +8,28 @@ tap "nikitabobko/tap"              # required for aerospace window manager
 
 # ── GUI Apps ──────────────────────────────────────────────────────────────────
 
-cask "alacritty"                   # terminal emulator
-cask "brave-browser"               # browser
-cask "raycast"                     # spotlight replacement — cmd+space launcher
-cask "karabiner-elements"          # keyboard remapping (capslock → hyper)
-cask "aerospace"                   # tiling window manager
-cask "bitwarden"                   # password manager
-cask "orbstack"                    # docker runtime (OrbStack already active — docker-desktop safe to remove)
-cask "visual-studio-code"          # editor
-cask "claude"                      # Claude desktop app
-cask "obs"                         # screen recording / streaming
-cask "shottr"                      # screenshot tool
-cask "spotify"                     # music
-cask "telegram"                    # messaging
-cask "vlc"                         # media player
-cask "whatsapp"                    # messaging
-cask "font-fira-code-nerd-font"    # coding font with icons
+cask "alacritty"                     # terminal emulator
+cask "brave-browser"                 # browser
+cask "raycast"                       # spotlight replacement — cmd+space launcher
+cask "karabiner-elements"            # keyboard remapping (capslock → hyper)
+cask "aerospace"                     # tiling window manager
+cask "bitwarden"                     # password manager
+cask "orbstack"                      # docker runtime (OrbStack already active — docker-desktop safe to remove)
+cask "visual-studio-code"            # editor
+cask "claude"                        # Claude desktop app
+cask "obs"                           # screen recording / streaming
+cask "shottr"                        # screenshot tool
+cask "spotify"                       # music
+cask "telegram"                      # messaging
+cask "vlc"                           # media player
+cask "whatsapp"                      # messaging
+cask "font-fira-code-nerd-font"      # coding font with icons
 cask "font-jetbrains-mono-nerd-font" # alternative coding font
+cask "claude-code"                   # terminal AI coding assistant (installed as cask)
 
 # ── Shell ─────────────────────────────────────────────────────────────────────
 
-brew "zsh"                          # 5.9
+brew "zsh"                         # 5.9
 brew "starship"                    # 1.25.1 — cross-shell prompt
 brew "zinit"                       # 3.14.0 — plugin manager (replaces oh-my-zsh)
 brew "zsh-autosuggestions"         # 0.7.1  — fallback if zinit GitHub clone fails
@@ -133,3 +134,4 @@ brew "yt-dlp"                      # YouTube / video downloader
 brew "cdk8s"                       # CDK8s CLI — define k8s apps with code
 brew "typescript"                  # TypeScript compiler (tsc)
 brew "arping"                      # ARP-level ping (network diagnostics)
+brew "rtk"                         # Rust Token Killer — CLI proxy to compress dev command output for AI tools
