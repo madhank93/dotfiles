@@ -5,4 +5,7 @@ Readme.*
 mac
 linux
 windows
+docs
+\.github
 install\.sh
+\.env\.example
