@@ -75,6 +75,11 @@ CONFLICTS=(
   "$HOME/.config/alacritty/catppuccin-mocha.toml"
   "$HOME/.config/alacritty/key-bindings.toml"
   "$HOME/.config/zellij/config.kdl"
+  "$HOME/.aider.conf.yml"
+  "$HOME/.claude/CLAUDE.md"
+  "$HOME/.claude/OFFLOAD.md"
+  "$HOME/.claude/RTK.md"
+  "$HOME/.claude/commands/offload.md"
 )
 
 for f in "${CONFLICTS[@]}"; do
@@ -84,7 +89,17 @@ for f in "${CONFLICTS[@]}"; do
   fi
 done
 
-stow --target="$HOME" --restow --dir="$DOTFILES" .
+# --no-folding: symlink individual files, never whole directories. Without it,
+# stow replaces e.g. ~/.claude/commands with a symlink into this repo, so anything
+# Claude Code writes there later lands in the dotfiles working tree.
+stow --target="$HOME" --restow --no-folding --dir="$DOTFILES" .
+
+# ── ~/.env (aider endpoint) — not stowed, holds the homelab LAN IP ────────────
+
+if [[ ! -f "$HOME/.env" ]]; then
+  cp "$DOTFILES/.env.example" "$HOME/.env"
+  echo "  Created ~/.env from template — set OLLAMA_API_BASE before using /offload."
+fi
 
 # ── mise runtimes ─────────────────────────────────────────────────────────────
 

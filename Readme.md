@@ -18,6 +18,13 @@ cd ~/dotfiles
 dotfiles/
 ├── .zshrc                    # shell entry point (sources zsh/ modules)
 ├── .gitconfig                # git config with delta pager
+├── .aider.conf.yml           # aider defaults → local model on homelab ollama
+├── .env.example              # template for ~/.env (OLLAMA_API_BASE; not stowed)
+├── .claude/
+│   ├── CLAUDE.md             # global Claude Code instructions (@-imports below)
+│   ├── RTK.md                # rtk token-proxy usage notes
+│   ├── OFFLOAD.md            # local-model offload working agreement
+│   └── commands/offload.md   # /offload slash command
 ├── .config/
 │   ├── alacritty/            # terminal: catppuccin theme + keybindings
 │   ├── starship.toml         # prompt: git, k8s, language versions
@@ -37,7 +44,7 @@ dotfiles/
 
 | Task | Command |
 |------|---------|
-| Re-apply symlinks | `stow --target=$HOME --restow .` |
+| Re-apply symlinks | `stow --target=$HOME --restow --no-folding .` |
 | Add a package | Edit `mac/Brewfile` → `brew bundle install --file=mac/Brewfile` |
 | Check package drift | `brew bundle check --file=mac/Brewfile` |
 | Update a runtime | `mise use --global node@<version>` |
