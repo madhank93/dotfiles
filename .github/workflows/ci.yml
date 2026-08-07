@@ -56,15 +56,15 @@ jobs:
           "
           echo "✓ mise config valid"
 
-      - name: gitconfig — valid INI
+      - name: gitconfig — parses
         run: |
-          python3 -c "
-          import configparser
-          c = configparser.ConfigParser()
-          c.read('.gitconfig')
-          assert c.sections(), 'empty gitconfig'
-          print('sections:', c.sections())
-          "
+          # Validate with git itself, not configparser: git keys are multi-valued
+          # (e.g. a credential section sets `helper =` to reset the inherited list,
+          # then `helper = !gh auth git-credential`), which configparser rejects
+          # as a duplicate option.
+          git config --file .gitconfig --list >/tmp/gitconfig.txt
+          [[ -s /tmp/gitconfig.txt ]] || { echo "✗ empty gitconfig"; exit 1; }
+          echo "  $(wc -l </tmp/gitconfig.txt | tr -d ' ') keys"
           echo "✓ .gitconfig valid"
 
       - name: .stow-local-ignore — covers critical dirs
