@@ -27,6 +27,14 @@ Ollama behind a Cilium LoadBalancer).
 4. Re-run aider with a targeted `--message`, or fix small things myself
 5. No commit unless asked
 
+## Preflight
+
+`.claude/hooks/offload-preflight.sh` checks, on an implementation-shaped
+prompt, that the endpoint answers and `executor` exists. Without it the failure
+is silent: aider errors on a missing model and the work just falls back to
+Claude. Register it as a `UserPromptSubmit` hook in `~/.claude/settings.json`
+(not stowed — that file is machine-local).
+
 ## Limits worth remembering
 
 The executor is a **Q3 quant on a 16GB card, 16K context**. It is not a frontier
