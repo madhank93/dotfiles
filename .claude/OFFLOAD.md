@@ -37,7 +37,7 @@ Claude. Register it as a `UserPromptSubmit` hook in `~/.claude/settings.json`
 
 ## Limits worth remembering
 
-The executor is a **Q3 quant on a 16GB card, 16K context**. It is not a frontier
+The executor is a **Q3 quant on a 16GB card, 14K context**. It is not a frontier
 model. It drifts out of scope, and it can emit code that parses but does not run
 (it once shipped an uninitialized variable that died under `set -u`). Always
 check behavior, not just syntax. If two prompts fail, write it myself.
