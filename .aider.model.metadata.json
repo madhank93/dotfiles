@@ -1,0 +1,9 @@
+{
+  "ollama/executor": {
+    "max_input_tokens": 24576,
+    "max_output_tokens": 4096,
+    "max_tokens": 28672,
+    "litellm_provider": "ollama",
+    "mode": "chat"
+  }
+}
