@@ -37,6 +37,32 @@ Claude. Register it as a `UserPromptSubmit` hook in `~/.claude/settings.json`
 settings.json accepts unknown top-level keys without complaint, so a
 `UserPromptSubmit` block at the top level parses, saves, and never fires.
 
+Because that file is machine-local, a rebuilt machine loses this silently and
+the preflight goes back to never running. The block, in full:
+
+```json
+"hooks": {
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Volumes/work/git-repos/dotfiles/.claude/hooks/offload-preflight.sh",
+          "timeout": 15
+        }
+      ]
+    }
+  ]
+}
+```
+
+Verify it landed in the right place — this prints the command on success and
+exits non-zero if the block is nested wrong:
+
+```bash
+jq -e '.hooks.UserPromptSubmit[].hooks[].command' ~/.claude/settings.json
+```
+
 ## Limits worth remembering
 
 The executor is a **Q3 quant on a 16GB card, 28K context**. It is not a frontier
