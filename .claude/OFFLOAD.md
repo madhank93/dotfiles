@@ -33,11 +33,39 @@ Ollama behind a Cilium LoadBalancer).
 prompt, that the endpoint answers and `executor` exists. Without it the failure
 is silent: aider errors on a missing model and the work just falls back to
 Claude. Register it as a `UserPromptSubmit` hook in `~/.claude/settings.json`
-(not stowed — that file is machine-local).
+(not stowed — that file is machine-local), **nested under the `hooks` key**:
+settings.json accepts unknown top-level keys without complaint, so a
+`UserPromptSubmit` block at the top level parses, saves, and never fires.
+
+Because that file is machine-local, a rebuilt machine loses this silently and
+the preflight goes back to never running. The block, in full:
+
+```json
+"hooks": {
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "/Volumes/work/git-repos/dotfiles/.claude/hooks/offload-preflight.sh",
+          "timeout": 15
+        }
+      ]
+    }
+  ]
+}
+```
+
+Verify it landed in the right place — this prints the command on success and
+exits non-zero if the block is nested wrong:
+
+```bash
+jq -e '.hooks.UserPromptSubmit[].hooks[].command' ~/.claude/settings.json
+```
 
 ## Limits worth remembering
 
-The executor is a **Q3 quant on a 16GB card, 14K context**. It is not a frontier
+The executor is a **Q3 quant on a 16GB card, 28K context**. It is not a frontier
 model. It drifts out of scope, and it can emit code that parses but does not run
 (it once shipped an uninitialized variable that died under `set -u`). Always
 check behavior, not just syntax. If two prompts fail, write it myself.
