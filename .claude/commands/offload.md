@@ -36,7 +36,7 @@ Long structured prompts break under shell quoting. Write the message to
 `<scratchpad>/offload-msg.md` and pass `--message-file`. This also means I can
 read back exactly what the model was told when a run goes wrong.
 
-**Prompt contract** — the executor is a Q3 quant with a 16K window. It follows
+**Prompt contract** — the executor is a Q3 quant with a 28K window. It follows
 concrete instructions and drifts on abstract ones. Every message must have:
 
 - **Numbered, atomic changes.** One change per number. Not "fix the flaky test."
@@ -79,8 +79,7 @@ aider --yes --no-auto-commit --map-tokens 0 \
 
 `--map-tokens 0` because every file the model may touch is already named on the
 command line. Measured in devopslings: the repo map costs 2.4k tokens of a
-14,336-token window — 17% of everything the executor has — to describe code the
-prompt does not refer to. Keep the map only when the task genuinely requires
+28,672-token window to describe code the prompt does not refer to. Keep the map only when the task genuinely requires
 discovery, and then expect a smaller task budget.
 
 Put the *compiler* in `--test-cmd`, not just the test runner — `go vet ./... &&

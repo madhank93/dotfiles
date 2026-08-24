@@ -2,9 +2,9 @@
 # Endpoint comes from ~/.env (OLLAMA_API_BASE).
 # A repo-local .aider.conf.yml overrides this file.
 
-model: ollama/executor   # Qwen3-Coder-30B-A3B UD-Q3_K_XL, num_ctx 14336, 100% VRAM-resident
+model: ollama/executor   # Qwen3-Coder-30B-A3B UD-Q3_K_XL, num_ctx 28672, 100% VRAM-resident
 edit-format: diff        # smaller edits = less local GPU time
 auto-commits: false      # Claude reviews the diff before anything is committed
-map-tokens: 1024         # cap repo-map size; 14336 tokens is the hard ceiling.
+map-tokens: 1024         # cap repo-map size; 28672 tokens is the hard ceiling.
                          # /offload overrides this to 0 — it names every file it
                          # touches, and the map costs 2.4k of those tokens.
