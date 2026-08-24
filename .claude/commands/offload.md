@@ -69,13 +69,19 @@ Pick `--test-cmd` from the repo (`mise run test`, `go test ./...`, `npm test`,
 `cargo test`). Scope it to what the change touches so the loop stays fast.
 
 ```bash
-aider --yes --no-auto-commit \
+aider --yes --no-auto-commit --map-tokens 0 \
       --message-file <scratchpad>/offload-msg.md \
       --auto-test --test-cmd "<the repo's test command>" \
       --lint-cmd "<lang>:<formatter/linter>" \
       --file <each path after --> \
       --read <each context-only path>
 ```
+
+`--map-tokens 0` because every file the model may touch is already named on the
+command line. Measured in devopslings: the repo map costs 2.4k tokens of a
+14,336-token window — 17% of everything the executor has — to describe code the
+prompt does not refer to. Keep the map only when the task genuinely requires
+discovery, and then expect a smaller task budget.
 
 Put the *compiler* in `--test-cmd`, not just the test runner — `go vet ./... &&
 go test ./...` beats `go test ./...`, because a type error then comes back as a

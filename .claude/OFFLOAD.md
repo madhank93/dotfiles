@@ -33,7 +33,9 @@ Ollama behind a Cilium LoadBalancer).
 prompt, that the endpoint answers and `executor` exists. Without it the failure
 is silent: aider errors on a missing model and the work just falls back to
 Claude. Register it as a `UserPromptSubmit` hook in `~/.claude/settings.json`
-(not stowed — that file is machine-local).
+(not stowed — that file is machine-local), **nested under the `hooks` key**:
+settings.json accepts unknown top-level keys without complaint, so a
+`UserPromptSubmit` block at the top level parses, saves, and never fires.
 
 ## Limits worth remembering
 

@@ -10,6 +10,9 @@ set -uo pipefail
 
 CACHE="${TMPDIR:-/tmp}/claude-offload-preflight.$(id -u)"
 CACHE_TTL=600
+# A negative result expires sooner: a blip should not suppress the local model
+# for the rest of the session.
+CACHE_TTL_FAIL=60
 MODEL=executor
 
 payload=$(cat)
@@ -27,7 +30,9 @@ printf '%s' "$prompt" | grep -qiE \
 cache_fresh() {
   [[ -f "$CACHE" ]] || return 1
   local age=$(( $(date +%s) - $(stat -f %m "$CACHE" 2>/dev/null || echo 0) ))
-  (( age < CACHE_TTL ))
+  local ttl=$CACHE_TTL
+  [[ "$(cat "$CACHE" 2>/dev/null)" != "ready" ]] && ttl=$CACHE_TTL_FAIL
+  (( age < ttl ))
 }
 
 if ! cache_fresh; then
@@ -37,7 +42,17 @@ if ! cache_fresh; then
   fi
   base="${base:-http://localhost:11434}"
 
-  if ! tags=$(curl -sf --max-time 3 "${base%/v1}/api/tags" 2>/dev/null); then
+  # Two attempts: the endpoint is a Cilium LB on the LAN, and the first packet
+  # after an idle period can lose the ARP round-trip. One retry is the
+  # difference between a real outage and a cold path.
+  tags=""
+  for _ in 1 2; do
+    tags=$(curl -sf --max-time 5 "${base%/v1}/api/tags" 2>/dev/null) && break
+    tags=""
+    sleep 1
+  done
+
+  if [[ -z "$tags" ]]; then
     printf 'unreachable\n' > "$CACHE"
   elif printf '%s' "$tags" | grep -q "\"${MODEL}:"; then
     printf 'ready\n' > "$CACHE"
