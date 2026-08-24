@@ -38,7 +38,8 @@ settings.json accepts unknown top-level keys without complaint, so a
 `UserPromptSubmit` block at the top level parses, saves, and never fires.
 
 Because that file is machine-local, a rebuilt machine loses this silently and
-the preflight goes back to never running. The block, in full:
+the preflight goes back to never running. The block, in full — the path is the
+stow target, not this repo, so it survives the repo moving:
 
 ```json
 "hooks": {
@@ -47,7 +48,7 @@ the preflight goes back to never running. The block, in full:
       "hooks": [
         {
           "type": "command",
-          "command": "/Volumes/work/git-repos/dotfiles/.claude/hooks/offload-preflight.sh",
+          "command": "$HOME/.claude/hooks/offload-preflight.sh",
           "timeout": 15
         }
       ]
@@ -55,6 +56,11 @@ the preflight goes back to never running. The block, in full:
   ]
 }
 ```
+
+`install.sh` stows that symlink. It runs `--no-folding`, so `~/.claude/hooks`
+is a real directory holding one symlink per hook rather than a link to the
+repo — which is what keeps anything Claude Code writes into `~/.claude` out of
+the working tree.
 
 Verify it landed in the right place — this prints the command on success and
 exits non-zero if the block is nested wrong:
