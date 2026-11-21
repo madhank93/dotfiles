@@ -48,6 +48,14 @@ if [[ -n "$ZELLIJ" ]]; then
   _zellij_tab_cwd
 fi
 
+# Report cwd to the terminal (OSC 7) so Rex can open splits/layouts in it
+_osc7_cwd() {
+  printf '\e]7;file://%s%s\e\\' "$HOST" "${PWD// /%20}"
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook chpwd _osc7_cwd
+_osc7_cwd
+
 # fzf kill process
 fkill() {
   local pid

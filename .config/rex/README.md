@@ -34,9 +34,7 @@ Notes:
 .config/rex/
   README.md      # this plan (stow-ignored via README.*)
   catppuccin-mocha  # Ghostty-format theme, imported by settings.lua
-  init.lua       # entry: require("keys"), require("actions")
-  keys.lua       # bindings + modes
-  actions.lua    # custom actions / layouts
+  init.lua       # bindings, modes, custom actions
   settings.lua   # app look & feel, run with `rex do`
 ```
 
@@ -69,50 +67,70 @@ FiraCode Nerd Font Mono 14).
 - [ ] Later, only if wanted: interface style, inactive pane fade, active
       border, pane padding.
 
-### 3. Key bindings (`keys.lua`)
+### 3. Key bindings (`init.lua`)
 
-Port Zellij muscle memory (`.config/zellij/config.kdl`) into Rex key modes:
+Rex's default `cmd` keys already cover the Zellij pane/tab modes, so most
+needed no config (full list: Mac Actions reference, "Default Shortcut"):
 
-| Zellij | Rex |
+| Zellij | Rex default |
 |---|---|
-| `Ctrl p` pane mode: `h/j/k/l` focus, `r`/`d` split right/down, `f` fullscreen, `x` close | mode `pane`: `pane.focus`, `pane.split {direction}`, `pane.zoom` |
-| `Ctrl t` tab mode: `1-9` goto, `h/l` prev/next, `n` new | mode `tab`: `client.tab.goto {index}`, `client.tab.new` |
-| `Ctrl n` resize mode | mode `resize`, `exclusive = true`, arrows/hjkl → `pane.resize` |
-| `Ctrl o` session mode | `session.switch` palette is likely enough |
+| pane: split right/down | `cmd+d` / `shift+cmd+d`, `cmd+enter` best fit |
+| pane: focus | `alt+cmd+arrows`, `cmd+]` / `cmd+[` |
+| pane: fullscreen / close | `shift+cmd+enter` zoom / `cmd+w` |
+| pane: float | `alt+cmd+enter` |
+| tab: goto / next / prev / new | `cmd+1-9` / `shift+cmd+]` / `shift+cmd+[` / `cmd+t` |
+| session | `cmd+k` switcher, `shift+cmd+n` new |
+| scroll/search | `shift+cmd+c` copy mode (vim keys, `/` search) |
 
-- [ ] Decide prefix style: Zellij-style `ctrl+p` modes vs `cmd+…` direct keys.
-      `ctrl+p/t/n` collide with shell/nvim — Zellij already ate them, so
-      parity is fine, but `cmd+` keeps them free.
-- [ ] Use `once = true` on modes for single-shot actions (split/new tab);
-      leave `resize` sticky.
-- [ ] Verify with `rex keymap` (shows SOURCE per key + unknown actions).
+- [x] Dropped the phase 1 test binding: it duplicated the default zoom key.
+- [x] Added the only gap, resize mode: `shift+cmd+r`, then arrows or `hjkl`
+      (shift = 15% steps), `esc` leaves. Exclusive, so stray keys don't type.
+- [ ] Try it for a week; add `hjkl` focus only if arrows chafe (`alt+cmd+h`
+      is macOS "Hide Others", so pick keys carefully).
 
-### 4. Custom actions (`actions.lua`)
+### 4. Custom actions (`init.lua`)
 
 Only ones actually used weekly:
 
-- [ ] `dev_layout`: nvim left, shell right (`rex.layout.horizontal`), cwd =
-      current pane's pwd.
-- [ ] `agent_layout`: Claude Code + shell + `git diff` watcher, fits the
-      offload loop (plan → `/offload` → review diff).
-- [ ] Skip a cwd-tab-rename hook (Zellij needed `_zellij_tab_cwd` in
-      `zsh/functions.zsh`) unless Rex tabs don't already show cwd/program.
+- [x] `dev` (`shift+cmd+e`): nvim left, shell right, both in the focused
+      pane's directory; tab named after it.
+- [x] OSC 7 hook in `zsh/functions.zsh`: zsh reports its cwd on every `cd`.
+      Without it Rex's `pwd` is empty and `dev` falls back to `$HOME`.
+- [x] `talos` (`shift+cmd+k`): tab with `k9s --context admin@talos-cluster`
+      beside `talosctl dashboard`, for periodic cluster checks. Node comes from
+      talosconfig (`talosctl config node …`), keeping the LAN IP out of git.
+- [x] Skipped `agent_layout`: Rex's agent integration already covers Claude
+      Code; add only if a fixed agent + diff layout gets opened by hand often.
+- [x] Skipped a cwd-tab-rename hook: revisit only if Rex tab titles don't
+      track cwd/program well enough.
 
 ### 5. Hosts (optional)
 
-- [ ] `rex.host{…}` for homelab boxes (Ollama GPU node) once a Rex server runs
-      there. Lets `rex -S <host> run …` drive remote jobs from here.
+A Rex host is a machine running a Rex server (`rex.host{label, endpoint}`).
 
-### 6. Retire overlap (decide after 2–3 weeks)
+- [x] **Talos cluster: not a host for now.** Talos nodes have no shell, SSH, or
+      package manager, so a Rex server can't be installed on them. The only
+      route is a Rex server in a pod, reached over Tailscale (built-in or
+      Serve). Rex's only no-Tailscale listener has no caller authentication
+      (`--allow-anonymous`), which would hand an in-cluster shell to anyone on
+      the LAN. Worth it only if long jobs must keep running in-cluster while
+      the Mac sleeps; until then the `talos` action covers checking in.
+- [x] Ollama: not a separate box. It runs inside the Talos cluster (LoadBalancer
+      service), so the Talos reasoning above applies. No hosts added.
 
-- [ ] Zellij autostart is gated on `START_ZELLIJ=1`, set only in
-      `alacritty.toml`, so Rex shells don't nest Zellij. No change needed now.
-- [ ] If Rex sticks: drop Alacritty + Zellij configs, `CONFLICTS` entries,
-      `_zellij_tab_cwd`, Brewfile casks.
+### 6. Retire overlap (deferred — review 2026-12-11)
+
+Decision 2026-11-20: keep Alacritty + Zellij alongside Rex.
+
+- [x] No nesting: Zellij autostart is gated on `START_ZELLIJ=1`, set only in
+      `alacritty.toml`, so Rex shells never start Zellij.
+- [ ] Review 2026-12-11. If Rex sticks: drop Alacritty + Zellij configs, their
+      `CONFLICTS` entries (install.sh + ci.yml), `_zellij_tab_cwd` in
+      `zsh/functions.zsh`, `START_ZELLIJ`, Brewfile casks.
 
 ## Decisions
 
-1. Run Rex alongside Alacritty + Zellij for now; phase 6 decides later.
+1. Run Rex alongside Alacritty + Zellij; phase 6 review on 2026-12-11.
 2. Key style: macOS-native `cmd` keys, not Zellij-style `ctrl` modes.
 3. Theme: Catppuccin Mocha, matching the rest of the repo.
 
