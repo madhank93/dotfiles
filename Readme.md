@@ -29,6 +29,7 @@ dotfiles/
 │   ├── alacritty/            # terminal: catppuccin theme + keybindings
 │   ├── starship.toml         # prompt: git, k8s, language versions
 │   ├── zellij/               # terminal multiplexer
+│   ├── rex/                  # Rex multiplexer: init.lua keys/actions (plan in README)
 │   └── mise/config.toml      # pinned runtime versions (node/python/go)
 ├── zsh/
 │   ├── aliases.zsh           # all aliases
